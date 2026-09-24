@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2>Search Jobs</h2>
+        <hr />
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            <form method="GET">
+              <div class="row">
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_title">Title:</label>
+                    <input type="text" name="title" id="id_title"
+                      class="form-control"
+                      value="{{ template_data.filters.title }}" />
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_location">Location:</label>
+                    <input type="text" name="location" id="id_location"
+                      class="form-control"
+                      value="{{ template_data.filters.location }}" />
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_salary_min">Salary from:</label>
+                    <input type="number" name="salary_min" id="id_salary_min"
+                      class="form-control"
+                      value="{{ template_data.filters.salary_min }}" />
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_salary_max">Salary to:</label>
+                    <input type="number" name="salary_max" id="id_salary_max"
+                      class="form-control"
+                      value="{{ template_data.filters.salary_max }}" />
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_skill">Skill:</label>
+                    <select name="skill" id="id_skill" class="form-control">
+                      <option value="">Any</option>
+                      {% for skill in template_data.skills %}
+                        <option value="{{ skill.id }}"
+                          {% if template_data.filters.skill == skill.id|stringformat:"s" %}selected{% endif %}>
+                          {{ skill }}</option>
+                      {% endfor %}
+                    </select>
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_workplace">Remote or on-site:</label>
+                    <select name="workplace" id="id_workplace" class="form-control">
+                      <option value="">Any</option>
+                      <option value="REMOTE"
+                        {% if template_data.filters.workplace == 'REMOTE' %}selected{% endif %}>Remote</option>
+                      <option value="ONSITE"
+                        {% if template_data.filters.workplace == 'ONSITE' %}selected{% endif %}>On-site</option>
+                    </select>
+                  </p>
+                </div>
+              </div>
+              <p>
+                <input type="checkbox" name="visa_sponsorship"
+                  id="id_visa_sponsorship" class="form-check-input"
+                  {% if template_data.filters.visa_sponsorship %}checked{% endif %} />
+                <label for="id_visa_sponsorship">Visa sponsorship only</label>
+              </p>
+              <button type="submit"
+                class="btn bg-dark text-white">Search
+              </button>
+              <a href="{% url 'jobs.search' %}"
+                class="btn btn-secondary">Clear</a>
+            </form>
+          </div>
+        </div>
+        {% for job in template_data.jobs %}
+          <div class="card shadow p-3 mb-4 rounded">
+            <div class="card-body">
+              <h4>{{ job.title }}</h4>
+              <h6 class="text-muted">{{ job.company }} - {{ job.location }}</h6>
+              <p>{{ job.description }}</p>
+              <p>
+                {{ job.get_workplace_display }}
+                {% if job.salary_min and job.salary_max %}
+                  | ${{ job.salary_min }} - ${{ job.salary_max }}
+                {% endif %}
+                {% if job.visa_sponsorship %}
+                  | Visa sponsorship available
+                {% endif %}
+              </p>
+              {% if job.skills.all %}
+                <p>
+                  Skills:
+                  {% for skill in job.skills.all %}
+                    {{ skill }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <p>No jobs matched your search.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -28,6 +28,21 @@
             <div class="navbar-nav ms-auto navbar-ml">
               <a class="nav-link"
                 href="{% url 'home.index' %}">About</a>
+              <a class="nav-link"
+                href="{% url 'jobs.search' %}">Find Jobs</a>
+              {% if user.is_authenticated %}
+                {% if user.is_recruiter %}
+                  <a class="nav-link"
+                    href="{% url 'jobs.index' %}">Jobs</a>
+                {% endif %}
+                <a class="nav-link"
+                  href="{% url 'login' %}">Log Out</a>
+              {% else %}
+                <a class="nav-link"
+                  href="{% url 'login' %}">Log In</a>
+                <a class="nav-link"
+                  href="{% url 'accounts.signup' %}">Sign Up</a>
+              {% endif %}
             </div>
           </div>
       </div>
