@@ -27,8 +27,6 @@
               id="navbarNavAltMarkup">
             <div class="navbar-nav ms-auto navbar-ml">
               <a class="nav-link"
-                href="{% url 'home.index' %}">About</a>
-              <a class="nav-link"
                 href="{% url 'jobs.search' %}">Find Jobs</a>
               {% if user.is_authenticated %}
                 {% if user.is_recruiter %}
@@ -47,6 +45,16 @@
           </div>
       </div>
     </nav>
+    {% if messages %}
+      <div class="container mt-3">
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
     <div>
       {% block content %}
       {% endblock content %}

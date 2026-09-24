@@ -105,6 +105,28 @@
                   {% endfor %}
                 </p>
               {% endif %}
+              {% if user.is_authenticated and user.is_job_seeker %}
+                {% if job.id in template_data.applied_ids %}
+                  <span class="badge bg-success p-2">Applied</span>
+                {% else %}
+                  <form method="POST" action="{% url 'jobs.apply' job.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                    <div class="collapse mb-2" id="message-{{ job.id }}">
+                      <label for="id_message_{{ job.id }}">Message to the recruiter (optional):</label>
+                      <textarea name="message" id="id_message_{{ job.id }}"
+                        class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn bg-dark text-white">Apply</button>
+                    <button type="button" class="btn btn-outline-secondary"
+                      data-bs-toggle="collapse" data-bs-target="#message-{{ job.id }}"
+                      aria-expanded="false" aria-controls="message-{{ job.id }}">Add a message</button>
+                  </form>
+                {% endif %}
+              {% elif not user.is_authenticated %}
+                <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}"
+                  class="btn btn-outline-secondary">Log in to apply</a>
+              {% endif %}
             </div>
           </div>
         {% empty %}

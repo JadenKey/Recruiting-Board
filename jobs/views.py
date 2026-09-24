@@ -1,10 +1,15 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from accounts.models import Skill
-from .models import Job
-from .forms import JobForm
+from .models import Job, Application
+from .forms import JobForm, ApplicationForm
 
 def is_recruiter(user):
     return user.is_authenticated and user.is_recruiter
+def is_job_seeker(user):
+    return user.is_authenticated and user.is_job_seeker
 
 def index(request):
     if not is_recruiter(request.user):
@@ -79,4 +84,35 @@ def search(request):
     template_data['jobs'] = jobs.distinct()
     template_data['skills'] = Skill.objects.all()
     template_data['filters'] = request.GET
+    if is_job_seeker(request.user):
+        template_data['applied_ids'] = set(
+            Application.objects.filter(seeker=request.user).values_list('job_id', flat=True)
+        )
     return render(request, 'jobs/search.html', {'template_data': template_data})
+
+def apply(request, id):
+    if request.method != 'POST':
+        return redirect('jobs.search')
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login')}?next={reverse('jobs.search')}")
+    if not is_job_seeker(request.user):
+        messages.error(request, 'Only Job Seekers can apply to jobs.')
+        return redirect('jobs.search')
+
+    job = get_object_or_404(Job, id=id)
+    form = ApplicationForm(request.POST)
+    if form.is_valid():
+        application, created = Application.objects.get_or_create(
+            job=job,
+            seeker=request.user,
+            defaults={'message': form.cleaned_data['message']},
+        )
+        if created:
+            messages.success(request, f'You applied to {job.title} at {job.company}.')
+        else:
+            messages.info(request, f'You already applied to {job.title}.')
+
+    next_url = request.POST.get('next')
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+    return redirect('jobs.search')

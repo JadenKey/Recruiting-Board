@@ -32,7 +32,7 @@ class JobSeekerProfile(models.Model):
         return self.user.username
     
 class Education (models.Model):
-    profile = models.ForeignKey
+    profile = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name="education")
     school = models.CharField(max_length=200)
     degree = models.CharField(max_length=200, blank=True)
     field_of_study = models.CharField(max_length=200, blank=True)

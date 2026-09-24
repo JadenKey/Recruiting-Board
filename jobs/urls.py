@@ -5,4 +5,5 @@ urlpatterns = [
     path('search', views.search, name='jobs.search'),
     path('create', views.create, name='jobs.create'),
     path('<int:id>/edit', views.edit, name='jobs.edit'),
+        path('<int:id>/apply', views.apply, name='jobs.apply'),
 ]
