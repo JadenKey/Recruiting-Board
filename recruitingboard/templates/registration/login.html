@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            {% if user.is_authenticated %}
+              <h2>Log Out</h2>
+              <hr />
+              <p>You are logged in as {{ user.username }}.</p>
+              <form method="POST" action="{% url 'logout' %}?next=/">
+                {% csrf_token %}
+                <button type="submit"
+                  class="btn bg-dark text-white">Log Out
+                </button>
+              </form>
+            {% else %}
+              <h2>Log In</h2>
+              <hr />
+              {% if form.errors %}
+                <p>Your username and password did not match. Please try again.</p>
+              {% endif %}
+              <form method="POST" action="?next={{ next|default:'/' }}">
+                {% csrf_token %}
+                <p>
+                  <label for="id_username">Username:</label>
+                  <input type="text" name="username" id="id_username"
+                    class="form-control" required />
+                </p>
+                <p>
+                  <label for="id_password">Password:</label>
+                  <input type="password" name="password" id="id_password"
+                    class="form-control" required />
+                </p>
+                <button type="submit"
+                  class="btn bg-dark text-white">Log In
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
