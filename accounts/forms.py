@@ -17,12 +17,14 @@ class CustomUserCreationForm(UserCreationForm):
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
-        fields = ['headline', 'location', 'skills']
+        fields = ['headline', 'location', 'skills', 'is_public']
+        widgets = {'is_public': forms.CheckboxInput(attrs={'class': 'form-check-input'})}
 
     def __init__(self, *args, **kwargs):
         super(JobSeekerProfileForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            field.widget.attrs.update({'class': 'form-control'})
+            if name != 'is_public':
+                field.widget.attrs.update({'class': 'form-control'})
 
 class ProfileEntryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

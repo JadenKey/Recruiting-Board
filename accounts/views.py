@@ -38,6 +38,8 @@ def profile_show(request, id):
         return redirect('home.index')
     if request.user != profile.user and not request.user.is_recruiter:
         return redirect('home.index')
+    if request.user != profile.user and not profile.is_public:
+        return redirect('home.index')
     template_data = {}
     template_data['title'] = profile.user.username
     template_data['profile'] = profile

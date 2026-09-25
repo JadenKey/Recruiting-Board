@@ -21,6 +21,22 @@
             {% endif %}
             <hr />
 
+            {% if template_data.is_owner %}
+            {% if template_data.profile.is_public %}
+              <div class="alert alert-success">
+                <strong>Public Profile</strong>
+                <br />
+                Recruiters can view your profile.
+              </div>
+            {% else %}
+              <div class="alert alert-secondary">
+                <strong>Private Profile</strong>
+                <br />
+                Recruiters cannot view your profile.
+              </div>
+            {% endif %}
+          {% endif %}
+
             <h5>Skills</h5>
             <p>
               {% for skill in template_data.profile.skills.all %}

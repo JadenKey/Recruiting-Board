@@ -96,7 +96,8 @@ def candidates(request):
         return redirect('home.index')
 
     candidates = JobSeekerProfile.objects.filter(
-        user__role=User.Role.JOB_SEEKER
+        user__role=User.Role.JOB_SEEKER,
+        is_public=True
     ).select_related('user').prefetch_related('skills', 'projects')
 
     location = request.GET.get('location')
@@ -152,3 +153,14 @@ def apply(request, id):
     if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         return redirect(next_url)
     return redirect('jobs.search')
+
+def applications(request):
+    if not is_job_seeker(request.user):
+        return redirect('home.index')
+
+    applications = Application.objects.filter(seeker=request.user).select_related('job')
+    template_data = {}
+    template_data['title'] = 'Applications'
+    template_data['applications'] = applications
+
+    return render(request, 'jobs/applications.html', {'template_data': template_data})

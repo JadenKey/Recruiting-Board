@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2>My Applications</h2>
+                <hr />
+                {% for application in template_data.applications %}
+                <div class="card shadow p-3 mb-4 rounded">
+                    <div class="card-body">
+                        <h4>{{ application.job.title }}</h4>
+                        <h6 class="text-muted">
+                            {{ application.job.company }} - {{ application.job.location }}
+                        </h6>
+                        <p>
+                            Applied on
+                            {{ application.created_at|date:"M d, Y" }}
+                        </p>
+                        <hr />
+                        <h6>Application Status</h6>
+                        <div class="row text-center align-items-center">
+                            <div class="col">
+                            {% if application.status == 'APPLIED' %}
+                                <span class="badge bg-success p-2">Applied</span>
+                            {% elif application.status == 'REVIEWED' or application.status == 'INTERVIEWING' or application.status == 'OFFERED' or application.status == 'CLOSED' %}
+                                <span class="badge bg-dark p-2">✓ Applied</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">Applied</span>
+                            {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                →
+                            </div>
+
+                            <div class="col">
+                            {% if application.status == 'REVIEWED' %}
+                                <span class="badge bg-success p-2">Review</span>
+                            {% elif application.status == 'INTERVIEWING' or application.status == 'OFFERED' or application.status == 'CLOSED' %}
+                                <span class="badge bg-dark p-2">✓ Review</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">Review</span>
+                            {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                →
+                            </div>
+
+                            <div class="col">
+                            {% if application.status == 'INTERVIEWING' %}
+                                <span class="badge bg-success p-2">Interview</span>
+                            {% elif application.status == 'OFFERED' or application.status == 'CLOSED' %}
+                                <span class="badge bg-dark p-2">✓ Interview</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">Interview</span>
+                            {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                →
+                            </div>
+
+                            <div class="col">
+                            {% if application.status == 'OFFERED' %}
+                                <span class="badge bg-success p-2">Offer</span>
+                            {% elif application.status == 'CLOSED' %}
+                                <span class="badge bg-dark p-2">✓ Offer</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">Offer</span>
+                            {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                →
+                            </div>
+
+                            <div class="col">
+                            {% if application.status == 'CLOSED' %}
+                                <span class="badge bg-success p-2">Closed</span>
+                            {% else %}
+                                <span class="badge bg-secondary p-2">Closed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr />
+                </div>
+            {% empty %}
+            <p>You haven't applied to any jobs yet.</p>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

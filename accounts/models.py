@@ -29,6 +29,7 @@ class JobSeekerProfile(models.Model):
     headline = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=200, blank=True, default="")
     skills = models.ManyToManyField(Skill, blank=True, related_name="seekers")
+    is_public = models.BooleanField(default=True)
     def __str__(self):
         return self.user.username
 
