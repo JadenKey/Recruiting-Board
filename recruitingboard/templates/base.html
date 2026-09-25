@@ -35,6 +35,8 @@
                   <a class="nav-link"
                     href="{% url 'jobs.index' %}">Jobs</a>
                 {% endif %}
+                <a class="nav-link"
+                  href="{% url 'messaging.inbox' %}">Messages</a>
                 {% if user.is_job_seeker %}
                   <a class="nav-link"
                     href="{% url 'accounts.profile' %}">My Profile</a>

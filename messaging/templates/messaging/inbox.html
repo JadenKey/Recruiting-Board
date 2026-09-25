@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2>Messages</h2>
+        <hr />
+        {% for person in template_data.people %}
+          <div class="card shadow p-3 mb-4 rounded">
+            <div class="card-body">
+              <h4>{{ person.username }}</h4>
+              <a href="{% url 'messaging.thread' person.id %}"
+                class="btn bg-dark text-white">Open</a>
+            </div>
+          </div>
+        {% empty %}
+          <p>No messages yet.</p>
+        {% endfor %}
+        {% if template_data.candidates %}
+          <hr />
+          <h4>Contact a Candidate</h4>
+          {% for candidate in template_data.candidates %}
+            <div class="card shadow p-3 mb-3 rounded">
+              <div class="card-body">
+                <h4>{{ candidate.username }}</h4>
+                <a href="{% url 'messaging.thread' candidate.id %}"
+                  class="btn bg-dark text-white">Message</a>
+                <a href="{% url 'messaging.email' candidate.id %}"
+                  class="btn btn-outline-secondary">Email</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

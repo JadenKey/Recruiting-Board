@@ -5,7 +5,7 @@ from .models import User, JobSeekerProfile, Education, WorkExperience, Project, 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ['username', 'role']
+        fields = ['username', 'email', 'role']
         widgets = {'role': forms.Select(attrs={'class': 'form-control'})}
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)

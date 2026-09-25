@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2>{{ template_data.other.username }}</h2>
+          <a href="{% url 'messaging.inbox' %}"
+            class="btn btn-secondary">Back to Messages</a>
+        </div>
+        <hr />
+        {% for message in template_data.conversation %}
+          <div class="card shadow p-3 mb-3 rounded">
+            <div class="card-body">
+              <h6 class="text-muted">
+                {{ message.sender.username }}
+                - {{ message.created_at|date:"M d, Y H:i" }}
+              </h6>
+              <p>{{ message.body }}</p>
+            </div>
+          </div>
+        {% empty %}
+          <p>No messages yet.</p>
+        {% endfor %}
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              {{ template_data.form.as_p }}
+              <button type="submit"
+                class="btn bg-dark text-white">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
