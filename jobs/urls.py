@@ -7,5 +7,8 @@ urlpatterns = [
     path('create', views.create, name='jobs.create'),
     path('<int:id>/edit', views.edit, name='jobs.edit'),
     path('<int:id>/apply', views.apply, name='jobs.apply'),
+    path('applications/<int:id>/status', views.application_status,
+        name='jobs.application_status'),
+    path('<int:id>/pipeline', views.pipeline, name='jobs.pipeline'),
     path('applications', views.applications, name='jobs.applications')
 ]

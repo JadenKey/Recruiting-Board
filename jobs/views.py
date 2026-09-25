@@ -164,3 +164,42 @@ def applications(request):
     template_data['applications'] = applications
 
     return render(request, 'jobs/applications.html', {'template_data': template_data})
+
+# the board shows the stages left to right, with rejected on the end
+BOARD = [
+    Application.Status.APPLIED,
+    Application.Status.REVIEWED,
+    Application.Status.INTERVIEWING,
+    Application.Status.OFFERED,
+    Application.Status.CLOSED,
+    Application.Status.REJECTED,
+]
+
+def pipeline(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    job = get_object_or_404(Job, id=id, recruiter=request.user)
+    columns = []
+    for status in BOARD:
+        columns.append({
+            'value': status,
+            'label': status.label,
+            'applications': job.applications.filter(status=status),
+        })
+    template_data = {}
+    template_data['title'] = 'Pipeline'
+    template_data['job'] = job
+    template_data['columns'] = columns
+    return render(request, 'jobs/pipeline.html', {'template_data': template_data})
+
+def application_status(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    application = get_object_or_404(Application, id=id, job__recruiter=request.user)
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status in dict(Application.Status.choices):
+            application.status = status
+            application.save()
+            messages.success(request, f'Moved {application.seeker.username} to {application.get_status_display()}.')
+    return redirect('jobs.pipeline', id=application.job.id)

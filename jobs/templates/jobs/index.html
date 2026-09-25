@@ -35,6 +35,8 @@
               {% endif %}
               <a href="{% url 'jobs.edit' job.id %}"
                 class="btn bg-dark text-white">Edit</a>
+              <a href="{% url 'jobs.pipeline' job.id %}"
+                class="btn bg-dark text-white">Pipeline</a>
             </div>
           </div>
         {% empty %}
