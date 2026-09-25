@@ -2,7 +2,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from accounts.models import Skill
+from django.db.models import Q
+from accounts.models import Skill, JobSeekerProfile, User
 from .models import Job, Application
 from .forms import JobForm, ApplicationForm
 
@@ -89,6 +90,41 @@ def search(request):
             Application.objects.filter(seeker=request.user).values_list('job_id', flat=True)
         )
     return render(request, 'jobs/search.html', {'template_data': template_data})
+
+def candidates(request):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+
+    candidates = JobSeekerProfile.objects.filter(
+        user__role=User.Role.JOB_SEEKER
+    ).select_related('user').prefetch_related('skills', 'projects')
+
+    location = request.GET.get('location')
+    if location:
+        candidates = candidates.filter(location__icontains=location)
+
+    skill = request.GET.get('skill')
+    if skill:
+        candidates = candidates.filter(skills__id=skill)
+
+    project = request.GET.get('project')
+    if project:
+        candidates = candidates.filter(
+            Q(projects__title__icontains=project) |
+            Q(projects__description__icontains=project)
+        )
+
+    template_data = {}
+    template_data['title'] = 'Search Candidates'
+    template_data['candidates'] = candidates.distinct().order_by('user__username')
+    template_data['skills'] = Skill.objects.all()
+    template_data['filters'] = request.GET
+
+    return render(
+        request,
+        'jobs/candidates.html',
+        {'template_data': template_data}
+    )
 
 def apply(request, id):
     if request.method != 'POST':

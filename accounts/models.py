@@ -27,9 +27,22 @@ class Skill(models.Model):
 class JobSeekerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="seeker_profile")
     headline = models.CharField(max_length=200, blank=True)
+    location = models.CharField(max_length=200, blank=True, default="")
     skills = models.ManyToManyField(Skill, blank=True, related_name="seekers")
     def __str__(self):
         return self.user.username
+
+class Project(models.Model):
+    profile = models.ForeignKey(
+        JobSeekerProfile,
+        on_delete=models.CASCADE,
+        related_name="projects"
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.title
     
 class Education (models.Model):
     profile = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name="education")

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2>Search Candidates</h2>
+        <hr />
+
+        <div class="card shadow p-3 mb-4 rounded">
+          <div class="card-body">
+            <form method="GET">
+              <div class="row">
+
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_location">Location:</label>
+                    <input
+                      type="text"
+                      name="location"
+                      id="id_location"
+                      class="form-control"
+                      value="{{ template_data.filters.location }}"
+                    />
+                  </p>
+                </div>
+
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_skill">Skill:</label>
+                    <select
+                      name="skill"
+                      id="id_skill"
+                      class="form-control"
+                    >
+                      <option value="">Any</option>
+
+                      {% for skill in template_data.skills %}
+                        <option
+                          value="{{ skill.id }}"
+                          {% if template_data.filters.skill == skill.id|stringformat:"s" %}selected{% endif %}
+                        >
+                          {{ skill }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </p>
+                </div>
+
+                <div class="col-md-6">
+                  <p>
+                    <label for="id_project">Project:</label>
+                    <input
+                      type="text"
+                      name="project"
+                      id="id_project"
+                      class="form-control"
+                      value="{{ template_data.filters.project }}"
+                    />
+                  </p>
+                </div>
+
+              </div>
+
+              <button
+                type="submit"
+                class="btn bg-dark text-white"
+              >
+                Search
+              </button>
+
+              <a
+                href="{% url 'jobs.candidates' %}"
+                class="btn btn-secondary"
+              >
+                Clear
+              </a>
+            </form>
+          </div>
+        </div>
+
+        {% for candidate in template_data.candidates %}
+          <div class="card shadow p-3 mb-4 rounded">
+            <div class="card-body">
+
+              <h4>{{ candidate.user.username }}</h4>
+
+              {% if candidate.headline or candidate.location %}
+                <h6 class="text-muted">
+                  {% if candidate.headline %}
+                    {{ candidate.headline }}
+                  {% endif %}
+
+                  {% if candidate.headline and candidate.location %}
+                    -
+                  {% endif %}
+
+                  {% if candidate.location %}
+                    {{ candidate.location }}
+                  {% endif %}
+                </h6>
+              {% endif %}
+
+              {% if candidate.skills.all %}
+                <p>
+                  Skills:
+                  {% for skill in candidate.skills.all %}
+                    {{ skill }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </p>
+              {% endif %}
+
+              {% if candidate.projects.all %}
+                <p>Projects:</p>
+
+                {% for project in candidate.projects.all %}
+                  <p>
+                    <strong>{{ project.title }}</strong>
+                    {% if project.description %}
+                      - {{ project.description }}
+                    {% endif %}
+                  </p>
+                {% endfor %}
+              {% endif %}
+
+            </div>
+          </div>
+        {% empty %}
+          <p>No candidates matched your search.</p>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
