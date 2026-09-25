@@ -7,3 +7,24 @@
 #id_skills input {
   margin-right: 6px;
 }
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+.navbar a.nav-link {
+  color: #FFFEF6 !important;
+}
+.bg-dark {
+  background-color: #1F4D2B !important;
+}
+.rb-masthead {
+  background-color: #2E7D32;
+}
+.btn-rb {
+  background-color: #6ab43e;
+  color: #FFFFFF;
+}
+.btn-rb:hover {
+  background-color: #5a9a34;
+  color: #FFFFFF;
+}
