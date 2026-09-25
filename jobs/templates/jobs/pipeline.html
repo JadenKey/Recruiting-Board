@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .kanban-column {
+    min-height: 300px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 8px;
+  }
+  .kanban-card {
+    cursor: move;
+  }
+</style>
+<div class="p-3 mt-4">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Pipeline</h2>
+      <a href="{% url 'jobs.index' %}"
+        class="btn btn-secondary">Back to My Job Posts</a>
+    </div>
+    <h6 class="text-muted">
+      {{ template_data.job.title }} - {{ template_data.job.company }}
+    </h6>
+    <p class="text-muted">Drag an applicant into another column to move them.</p>
+    <hr />
+    <div class="row">
+      {% for column in template_data.columns %}
+        <div class="col-md-2">
+          <h6>{{ column.label }} ({{ column.applications|length }})</h6>
+          <div class="kanban-column" ondragover="allowDrop(event)"
+            ondrop="drop(event, '{{ column.value }}')">
+            {% for application in column.applications %}
+              <div class="card shadow p-2 mb-3 rounded kanban-card"
+                id="application-{{ application.id }}" draggable="true"
+                ondragstart="drag(event)"
+                data-url="{% url 'jobs.application_status' application.id %}">
+                <div class="card-body p-2">
+                  <p><strong>{{ application.seeker.username }}</strong></p>
+                  {% if application.message %}
+                    <p>{{ application.message }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<form method="POST" id="move-form">
+  {% csrf_token %}
+  <input type="hidden" name="status" id="move-status" />
+</form>
+<!-- drag and drop adapted from https://www.geeksforgeeks.org/javascript/build-a-drag-drop-kanban-board-using-html-css-javascript/ -->
+<script>
+  function allowDrop(event) {
+    event.preventDefault();
+  }
+
+  function drag(event) {
+    event.dataTransfer.setData('text/plain', event.target.id);
+  }
+
+  function drop(event, status) {
+    event.preventDefault();
+    var id = event.dataTransfer.getData('text/plain');
+    var card = document.getElementById(id);
+    event.currentTarget.appendChild(card);
+    var form = document.getElementById('move-form');
+    form.action = card.dataset.url;
+    document.getElementById('move-status').value = status;
+    form.submit();
+  }
+</script>
+{% endblock content %}

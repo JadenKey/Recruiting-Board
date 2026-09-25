@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'home',
     'accounts',
     'jobs',
+    'messaging',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +133,12 @@ STATICFILES_DIRS = [
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# gmail settings for the shared noreply account that sends candidate emails
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'noreply.recruitingboard@gmail.com'
+EMAIL_HOST_PASSWORD = 'rsrp ilgr ktiu qslw'
+DEFAULT_FROM_EMAIL = 'noreply.recruitingboard@gmail.com'
