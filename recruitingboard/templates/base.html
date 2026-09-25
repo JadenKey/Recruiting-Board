@@ -35,6 +35,10 @@
                   <a class="nav-link"
                     href="{% url 'jobs.index' %}">Jobs</a>
                 {% endif %}
+                {% if user.is_job_seeker %}
+                  <a class="nav-link"
+                    href="{% url 'accounts.profile' %}">My Profile</a>
+                {% endif %}
                 <a class="nav-link"
                   href="{% url 'login' %}">Log Out</a>
               {% else %}
