@@ -84,6 +84,8 @@
             <div class="card-body">
 
               <h4>{{ candidate.user.username }}</h4>
+              <a href="{% url 'accounts.profile_show' candidate.id %}"
+              class="btn btn-outline-secondary btn-sm mb-2">View Profile</a>
 
               {% if candidate.headline or candidate.location %}
                 <h6 class="text-muted">
