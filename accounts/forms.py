@@ -18,12 +18,12 @@ class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
         model = JobSeekerProfile
         fields = ['headline', 'location', 'skills', 'is_public']
-        widgets = {'is_public': forms.CheckboxInput(attrs={'class': 'form-check-input'})}
+        widgets = {'is_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),'skills': forms.CheckboxSelectMultiple}
 
     def __init__(self, *args, **kwargs):
         super(JobSeekerProfileForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            if name != 'is_public':
+            if name not in ['is_public', 'skills']:
                 field.widget.attrs.update({'class': 'form-control'})
 
 class ProfileEntryForm(forms.ModelForm):

@@ -6,13 +6,14 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = ['title', 'company', 'description', 'location', 'salary_min',
             'salary_max', 'workplace', 'visa_sponsorship', 'skills']
+        widgets = {'skills': forms.CheckboxSelectMultiple}
 
     def __init__(self, *args, **kwargs):
         super(JobForm, self).__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if name == 'visa_sponsorship':
                 field.widget.attrs.update({'class': 'form-check-input'})
-            else:
+            elif name != 'skills':
                 field.widget.attrs.update({'class': 'form-control'})
 
 class ApplicationForm(forms.ModelForm):

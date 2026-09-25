@@ -1,1 +1,9 @@
 /* Styling choices */
+#id_skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+#id_skills input {
+  margin-right: 6px;
+}
