@@ -5,7 +5,7 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         JOB_SEEKER = "SEEKER", "Job Seeker"
         RECRUITER = "RECRUITER", "Recruiter"
-    role = models.CharField(choices=Role.choices, max_length=200)
+    role = models.CharField(choices=Role.choices, max_length=200, blank=True)
     @property
     def is_recruiter(self):
         return self.role == self.Role.RECRUITER

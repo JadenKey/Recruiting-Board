@@ -12,6 +12,7 @@ class CustomUserCreationForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
             self.fields[fieldname].widget.attrs.update({'class': 'form-control'})
+        self.fields['role'].required = True
 
 class JobSeekerProfileForm(forms.ModelForm):
     class Meta:
