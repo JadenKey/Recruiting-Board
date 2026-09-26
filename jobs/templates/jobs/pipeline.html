@@ -16,7 +16,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Pipeline</h2>
       <a href="{% url 'jobs.index' %}"
-        class="btn btn-secondary">Back to My Job Posts</a>
+        class="btn btn-rb-secondary px-4 py-2 fw-semibold">Back to My Job Posts</a>
     </div>
     <h6 class="text-muted">
       {{ template_data.job.title }} - {{ template_data.job.company }}
@@ -40,9 +40,9 @@
                     <p>{{ application.message }}</p>
                   {% endif %}
                   <a href="{% url 'messaging.thread' application.seeker.id %}"
-                    class="btn btn-sm bg-dark text-white" draggable="false">Message</a>
+                    class="btn btn-rb-secondary px-4 py-2 fw-semibold" draggable="false">Message</a>
                   <a href="{% url 'messaging.email' application.seeker.id %}"
-                    class="btn btn-sm btn-outline-secondary" draggable="false">Email</a>
+                    class="btn btn-rb-secondary px-4 py-2 fw-semibold" draggable="false">Email</a>
                 </div>
               </div>
             {% endfor %}

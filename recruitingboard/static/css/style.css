@@ -13,33 +13,90 @@ body {
 }
 .navbar a.nav-link {
   color: #FFFEF6 !important;
+  transition: color 0.2s ease;
+}
+.navbar a.nav-link:hover {
+    color: #f6d5b3 !important;
 }
 .bg-dark {
   background-color: #543d2f !important;
 }
 .btn-rb {
-  background-color: #b07e39;
+  background-color: #9c7032;
   color: #FFFFFF;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 .btn-rb:hover {
-  background-color: #825b2f;
+  background-color: #75522a;
   color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(80, 55, 25, 0.25);
+}
+.btn-rb-secondary {
+  background-color: #e8dfd7;
+  color: #543d2f;
+  border: 1px solid #cbb9a9;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.btn-rb-secondary:hover {
+  background-color: #d4c4b5;
+  color: #543d2f;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(80, 55, 25, 0.15);
 }
 
 .rb-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     background: linear-gradient(135deg, #faf6f3 0%, #f6d5b3 55%, #f7b165 100%) !important;
     box-shadow: 0 12px 30px rgba(80, 55, 25, 0.18) !important;
     overflow: hidden;
 }
+.rb-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 40px rgba(80, 55, 25, 0.25) !important;
+}
+
 .rb-card-background {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     background: #d4b89d !important;
     box-shadow: 0 12px 30px rgba(80, 55, 25, 0.18) !important;
     overflow: hidden;
 }
+.rb-card-background:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 40px rgba(80, 55, 25, 0.25) !important;
+}
+.rb-title {
+    position: relative;
+    display: inline-block;
+}
+
+.rb-title::after {
+    content: "";
+    display: block;
+    width: 100px;
+    height: 3px;
+    background: #b07e39;
+    margin: 8px auto 0;
+    border-radius: 5px;
+}
+
 
 .rb-masthead {
+    display: flex;
+    align-items: center;
     background-image: url("../images/hero.jpg");
     background-size: cover;
     background-position: center;
 }
 
+@keyframes fadeInUp {
+  from {opacity: 0; transform: translateY(20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+.rb-card, .rb-card-background, .card {
+  animation: fadeInUp 0.8s ease-out forwards;
+}

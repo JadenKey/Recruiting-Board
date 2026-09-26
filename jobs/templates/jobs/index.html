@@ -7,7 +7,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h2>My Job Posts</h2>
           <a href="{% url 'jobs.create' %}"
-            class="btn bg-dark text-white">Post a Job</a>
+            class="btn btn-rb px-4 py-2 fw-semibold">Post a Job</a>
         </div>
         <hr />
         {% for job in template_data.jobs %}
@@ -34,9 +34,9 @@
                 </p>
               {% endif %}
               <a href="{% url 'jobs.edit' job.id %}"
-                class="btn bg-dark text-white">Edit</a>
+                class="btn btn-rb px-4 py-2 fw-semibold">Edit</a>
               <a href="{% url 'jobs.pipeline' job.id %}"
-                class="btn bg-dark text-white">Pipeline</a>
+                class="btn btn-rb-secondary px-4 py-2 fw-semibold">Pipeline</a>
             </div>
           </div>
         {% empty %}

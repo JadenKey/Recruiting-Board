@@ -11,7 +11,7 @@
             <div class="card-body">
               <h4>{{ person.username }}</h4>
               <a href="{% url 'messaging.thread' person.id %}"
-                class="btn bg-dark text-white">Open</a>
+                class="btn btn-rb px-4 py-2 fw-semibold">Open</a>
             </div>
           </div>
         {% empty %}

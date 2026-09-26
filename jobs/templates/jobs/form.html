@@ -12,10 +12,10 @@
               {% csrf_token %}
               {{ template_data.form.as_p }}
               <button type="submit"
-                class="btn bg-dark text-white">Save
+                class="btn btn-rb px-4 py-2 fw-semibold">Save
               </button>
               <a href="{% url 'jobs.index' %}"
-                class="btn btn-secondary">Cancel</a>
+                class="btn btn-rb-secondary px-4 py-2 fw-semibold">Cancel</a>
             </form>
           </div>
         </div>

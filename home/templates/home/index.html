@@ -16,10 +16,18 @@
   <div class="container"> 
     <div class="row mt-4"> 
       <div class="col mx-auto text-center mb-4"> 
-        <h4 class="mb-3">Welcome to Recruiting Board!</h4> 
+        <h4 class="rb-title">
+        {% if user.is_authenticated %}
+          Welcome, {{ user.username }}!
+        {% else %}
+          Welcome!
+        {% endif %}
+        </h4>
+        {% if not user.is_superuser %}
         <p class="text-muted mb-0"> 
           Discover new opportunities or talented candidates. 
         </p> 
+        {% endif %}
       </div> 
     </div> 
     <div class="row justify-content-center mt-4">
@@ -74,7 +82,20 @@
                 View Candidates
               </a>
             </div>
-          {% endif %}
+            {% elif user.is_superuser %}
+            <h4 class="card-title fw-bold mb-3 text-dark">
+              Manage Users and Job Posts
+            </h4>
+            <p class="card-text text-muted mb-4 lh-lg">
+              Access the admin panel to manage users, job posts, and other
+              Recruiting Board data.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="{% url 'admin:index' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Admin Panel
+              </a>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>

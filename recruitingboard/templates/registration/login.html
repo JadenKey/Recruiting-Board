@@ -13,7 +13,7 @@
               <form method="POST" action="{% url 'logout' %}?next=/">
                 {% csrf_token %}
                 <button type="submit"
-                  class="btn bg-dark text-white">Log Out
+                  class="btn btn-rb px-4 py-2 fw-semibold">Log Out
                 </button>
               </form>
             {% else %}
@@ -35,7 +35,7 @@
                     class="form-control" required />
                 </p>
                 <button type="submit"
-                  class="btn bg-dark text-white">Log In
+                  class="btn btn-rb px-4 py-2 fw-semibold">Log In
                 </button>
               </form>
             {% endif %}

@@ -64,14 +64,14 @@
 
               <button
                 type="submit"
-                class="btn bg-dark text-white"
+                class="btn btn-rb px-4 py-2 fw-semibold"
               >
                 Search
               </button>
 
               <a
                 href="{% url 'jobs.candidates' %}"
-                class="btn btn-secondary"
+                class="btn btn-rb-secondary px-4 py-2 fw-semibold"
               >
                 Clear
               </a>
@@ -86,11 +86,11 @@
               <h4>{{ candidate.user.username }}</h4>
               <div class="mb-2">
                 <a href="{% url 'accounts.profile_show' candidate.id %}"
-                  class="btn btn-outline-secondary btn-sm">View Profile</a>
+                  class="btn btn-rb px-4 py-2 fw-semibold">View Profile</a>
                 <a href="{% url 'messaging.thread' candidate.user.id %}"
-                  class="btn bg-dark text-white btn-sm">Message</a>
+                  class="btn btn-rb-secondary px-4 py-2 fw-semibold">Message</a>
                 <a href="{% url 'messaging.email' candidate.user.id %}"
-                  class="btn btn-outline-secondary btn-sm">Email</a>
+                  class="btn btn-rb-secondary px-4 py-2 fw-semibold">Email</a>
               </div>
 
               {% if candidate.show_headline and candidate.headline %}
