@@ -40,9 +40,9 @@
                     <p>{{ application.message }}</p>
                   {% endif %}
                   <a href="{% url 'messaging.thread' application.seeker.id %}"
-                    class="btn btn-rb-secondary px-4 py-2 fw-semibold" draggable="false">Message</a>
+                    class="btn btn-rb px-4 py-2 fw-semibold" draggable="false">Message</a>
                   <a href="{% url 'messaging.email' application.seeker.id %}"
-                    class="btn btn-rb-secondary px-4 py-2 fw-semibold" draggable="false">Email</a>
+                    class="btn btn-rb px-4 py-2 fw-semibold" draggable="false">Email</a>
                 </div>
               </div>
             {% endfor %}
