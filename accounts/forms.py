@@ -4,6 +4,11 @@ from django.forms import inlineformset_factory
 from .models import User, JobSeekerProfile, Education, WorkExperience, Project, Link
 
 class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    
     company_name = forms.CharField(max_length=200, required=False,
         label='Company name (recruiters only)',
         widget=forms.TextInput(attrs={'class': 'form-control'}))
