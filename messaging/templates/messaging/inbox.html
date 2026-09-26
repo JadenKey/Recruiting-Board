@@ -7,7 +7,7 @@
         <h2>Messages</h2>
         <hr />
         {% for person in template_data.people %}
-          <div class="card shadow p-3 mb-4 rounded">
+          <div class="card rb-card-background shadow p-3 mb-4 rounded">
             <div class="card-body">
               <h4>{{ person.username }}</h4>
               <a href="{% url 'messaging.thread' person.id %}"

@@ -30,7 +30,7 @@
           <div class="kanban-column" ondragover="allowDrop(event)"
             ondrop="drop(event, '{{ column.value }}')">
             {% for application in column.applications %}
-              <div class="card shadow p-2 mb-3 rounded kanban-card"
+              <div class="card rb-card-background shadow p-2 mb-3 rounded kanban-card"
                 id="application-{{ application.id }}" draggable="true"
                 ondragstart="drag(event)"
                 data-url="{% url 'jobs.application_status' application.id %}">

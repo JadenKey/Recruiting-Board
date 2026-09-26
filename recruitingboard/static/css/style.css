@@ -15,16 +15,31 @@ body {
   color: #FFFEF6 !important;
 }
 .bg-dark {
-  background-color: #1F4D2B !important;
-}
-.rb-masthead {
-  background-color: #2E7D32;
+  background-color: #543d2f !important;
 }
 .btn-rb {
-  background-color: #6ab43e;
+  background-color: #b07e39;
   color: #FFFFFF;
 }
 .btn-rb:hover {
-  background-color: #5a9a34;
+  background-color: #825b2f;
   color: #FFFFFF;
 }
+
+.rb-card {
+    background: linear-gradient(135deg, #faf6f3 0%, #f6d5b3 55%, #f7b165 100%) !important;
+    box-shadow: 0 12px 30px rgba(80, 55, 25, 0.18) !important;
+    overflow: hidden;
+}
+.rb-card-background {
+    background: #d4b89d !important;
+    box-shadow: 0 12px 30px rgba(80, 55, 25, 0.18) !important;
+    overflow: hidden;
+}
+
+.rb-masthead {
+    background-image: url("../images/hero.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
