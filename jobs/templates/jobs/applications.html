@@ -7,7 +7,7 @@
                 <h2>My Applications</h2>
                 <hr />
                 {% for application in template_data.applications %}
-                <div class="card shadow p-3 mb-4 rounded">
+                <div class="card rb-card-background shadow p-3 mb-4 rounded">
                     <div class="card-body">
                         <h4>{{ application.job.title }}</h4>
                         <h6 class="text-muted">
@@ -20,6 +20,13 @@
                         <hr />
                         <h6>Application Status</h6>
                         <div class="row text-center align-items-center">
+                            {% if application.status == 'REJECTED' %}
+                            <div class="text-center py-3">
+                                <span class="badge bg-danger p-2">
+                                    Rejected
+                                </span>
+                            </div>
+                            {% else %}
                             <div class="col">
                             {% if application.status == 'APPLIED' %}
                                 <span class="badge bg-success p-2">Applied</span>
@@ -77,6 +84,7 @@
                                 <span class="badge bg-success p-2">Closed</span>
                             {% else %}
                                 <span class="badge bg-secondary p-2">Closed</span>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </div>

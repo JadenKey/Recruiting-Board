@@ -7,7 +7,7 @@
         <h2>Search Candidates</h2>
         <hr />
 
-        <div class="card shadow p-3 mb-4 rounded">
+        <div class="card rb-card-background shadow p-3 mb-4 rounded">
           <div class="card-body">
             <form method="GET">
               <div class="row">
@@ -80,7 +80,7 @@
         </div>
 
         {% for candidate in template_data.candidates %}
-          <div class="card shadow p-3 mb-4 rounded">
+          <div class="card rb-card-background shadow p-3 mb-4 rounded">
             <div class="card-body">
 
               <h4>{{ candidate.user.username }}</h4>

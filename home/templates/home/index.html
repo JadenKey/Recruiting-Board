@@ -1,18 +1,84 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<header class="masthead rb-masthead text-white text-center py-4">
-  <div class="container d-flex align-items-center flex-column pt-2">
-    <h2>Recruiting Board</h2>
-    <p>For job seekers to find their next role and recruiters to find their next hire.</p>
-  </div>
-</header>
-<div class="p-3">
-  <div class="container">
-    <div class="row mt-3">
-      <div class="col mx-auto text-center mb-3">
-        <h4>Welcome to Recruiting Board!</h4>
+
+<header class="masthead rb-masthead text-white text-center py-5">
+  <div class="container d-flex align-items-center flex-column pt-3">
+    <h2 class="mb-3">
+      Recruiting Board
+    </h2> 
+    <p class="lead mb-0">
+      For job seekers to find their next role and recruiters to find their next hire.
+    </p> 
+  </div> 
+</header> 
+<div class="p-4"> 
+  <div class="container"> 
+    <div class="row mt-4"> 
+      <div class="col mx-auto text-center mb-4"> 
+        <h4 class="mb-3">Welcome to Recruiting Board!</h4> 
+        <p class="text-muted mb-0"> 
+          Discover new opportunities or talented candidates. 
+        </p> 
+      </div> 
+    </div> 
+    <div class="row justify-content-center mt-4">
+      <div class="col-md-8 col-lg-6">
+        <div class="card border-0 rounded-4 p-4 rb-card">
+          <div class="card-body text-center">
+            {% if not user.is_authenticated %}
+            <h4 class="card-title fw-bold mb-3 text-dark">
+              Get Started
+            </h4>
+            <p class="card-text text-muted mb-4 lh-lg">
+              Ready to find your next opportunity or your next great hire? 
+              Sign in to your account or create one to get started.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="{% url 'login' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Log In
+              </a>
+              <a href="{% url 'accounts.signup' %}" class="btn btn-rb px-4 py-2 fw-semibold shadow-sm">
+                Sign Up
+              </a>
+            </div>
+            {% elif user.is_job_seeker %}
+            <h4 class="card-title fw-bold mb-3 text-dark">
+              Find Your Next Opportunity
+            </h4>
+            <p class="card-text text-muted mb-4 lh-lg">
+              Explore available jobs and keep your profile up to date
+              so recruiters can discover what you have to offer.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="{% url 'jobs.search' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Find Jobs
+              </a>
+              <a href="{% url 'accounts.profile' %}" class="btn btn-rb px-4 py-2 fw-semibold shadow-sm">
+                View Profile
+              </a>
+            </div>
+            {% elif user.is_recruiter %}
+            <h4 class="card-title fw-bold mb-3 text-dark">
+              Find Your Next Hire
+            </h4>
+            <p class="card-text text-muted mb-4 lh-lg">
+              Post opportunities and discover qualified candidates
+              who could be the right fit for your team.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="{% url 'jobs.create' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Post Jobs
+              </a>
+              <a href="{% url 'jobs.candidates' %}" class="btn btn-rb px-4 py-2 fw-semibold shadow-sm">
+                View Candidates
+              </a>
+            </div>
+          {% endif %}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+  </div> 
+</div> 
 {% endblock content %}
