@@ -70,14 +70,19 @@ def email_candidate(request, id):
                 messages.error(request,
                     f'{candidate.username} does not have an email address saved.')
             else:
-                send_mail(
-                    form.cleaned_data['subject'],
-                    form.cleaned_data['body'],
-                    None,
-                    [candidate.email],
-                )
+                try: 
+                    send_mail(
+                        form.cleaned_data['subject'],
+                        form.cleaned_data['body'],
+                        None,
+                        [candidate.email],
+                    )
+                except OSError:
+                    messages.error(request, 'Email could not be sent. Please try again later.')
+                    template_data['form'] = form
+                    return render(request, 'messaging/email.html', {'template_data': template_data})
                 messages.success(request, f'Email sent to {candidate.username}.')
-            return redirect('messaging.inbox')
+            return redirect('jobs.candidates')
         else:
             template_data['form'] = form
             return render(request, 'messaging/email.html', {'template_data': template_data})

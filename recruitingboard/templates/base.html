@@ -31,9 +31,11 @@
           <div class="collapse navbar-collapse"
               id="navbarNavAltMarkup">
             <div class="navbar-nav ms-auto navbar-ml">
+            {% if not user.is_recruiter %}
               <a class="nav-link"
                 href="{% url 'jobs.search' %}">Find Jobs</a>
                 <div class="vr bg-white mx-2 d-none d-lg-block"></div>
+            {% endif %}
               {% if user.is_authenticated %}
                 {% if user.is_recruiter %}
                   <a class="nav-link"
