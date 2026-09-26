@@ -84,26 +84,24 @@
             <div class="card-body">
 
               <h4>{{ candidate.user.username }}</h4>
-              <a href="{% url 'accounts.profile_show' candidate.id %}"
-              class="btn btn-outline-secondary btn-sm mb-2">View Profile</a>
+              <div class="mb-2">
+                <a href="{% url 'accounts.profile_show' candidate.id %}"
+                  class="btn btn-outline-secondary btn-sm">View Profile</a>
+                <a href="{% url 'messaging.thread' candidate.user.id %}"
+                  class="btn bg-dark text-white btn-sm">Message</a>
+                <a href="{% url 'messaging.email' candidate.user.id %}"
+                  class="btn btn-outline-secondary btn-sm">Email</a>
+              </div>
 
-              {% if candidate.headline or candidate.location %}
-                <h6 class="text-muted">
-                  {% if candidate.headline %}
-                    {{ candidate.headline }}
-                  {% endif %}
-
-                  {% if candidate.headline and candidate.location %}
-                    -
-                  {% endif %}
-
-                  {% if candidate.location %}
-                    {{ candidate.location }}
-                  {% endif %}
-                </h6>
+              {% if candidate.show_headline and candidate.headline %}
+                <h6 class="text-muted">{{ candidate.headline }}</h6>
               {% endif %}
 
-              {% if candidate.skills.all %}
+              {% if candidate.show_location and candidate.location %}
+                <p class="text-muted">{{ candidate.location }}</p>
+              {% endif %}
+
+              {% if candidate.show_skills and candidate.skills.all %}
                 <p>
                   Skills:
                   {% for skill in candidate.skills.all %}
@@ -112,7 +110,7 @@
                 </p>
               {% endif %}
 
-              {% if candidate.projects.all %}
+              {% if candidate.show_projects and candidate.projects.all %}
                 <p>Projects:</p>
 
                 {% for project in candidate.projects.all %}

@@ -39,6 +39,10 @@
                   {% if application.message %}
                     <p>{{ application.message }}</p>
                   {% endif %}
+                  <a href="{% url 'messaging.thread' application.seeker.id %}"
+                    class="btn btn-sm bg-dark text-white" draggable="false">Message</a>
+                  <a href="{% url 'messaging.email' application.seeker.id %}"
+                    class="btn btn-sm btn-outline-secondary" draggable="false">Email</a>
                 </div>
               </div>
             {% endfor %}

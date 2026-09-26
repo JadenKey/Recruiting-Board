@@ -11,33 +11,39 @@
               {% if template_data.is_owner %}
                 <a href="{% url 'accounts.profile_edit' %}"
                   class="btn bg-dark text-white">Edit Profile</a>
+              {% elif user.is_recruiter %}
+                <div>
+                  <a href="{% url 'messaging.thread' template_data.profile.user.id %}"
+                    class="btn bg-dark text-white">Message</a>
+                  <a href="{% url 'messaging.email' template_data.profile.user.id %}"
+                    class="btn btn-outline-secondary">Email</a>
+                </div>
               {% endif %}
             </div>
-            {% if template_data.profile.headline %}
-              <h5>{{ template_data.profile.headline }}</h5>
+            {% if template_data.show.headline and template_data.profile.headline %}
+              <h5>
+                {{ template_data.profile.headline }}
+                {% if template_data.is_owner and not template_data.profile.show_headline %}
+                  <span class="badge bg-secondary">Hidden from recruiters</span>
+                {% endif %}
+              </h5>
             {% endif %}
-            {% if template_data.profile.location %}
-              <h6 class="text-muted">{{ template_data.profile.location }}</h6>
+            {% if template_data.show.location and template_data.profile.location %}
+              <h6 class="text-muted">
+                {{ template_data.profile.location }}
+                {% if template_data.is_owner and not template_data.profile.show_location %}
+                  <span class="badge bg-secondary">Hidden from recruiters</span>
+                {% endif %}
+              </h6>
             {% endif %}
             <hr />
 
-            {% if template_data.is_owner %}
-            {% if template_data.profile.is_public %}
-              <div class="alert alert-success">
-                <strong>Public Profile</strong>
-                <br />
-                Recruiters can view your profile.
-              </div>
-            {% else %}
-              <div class="alert alert-secondary">
-                <strong>Private Profile</strong>
-                <br />
-                Recruiters cannot view your profile.
-              </div>
-            {% endif %}
-          {% endif %}
-
-            <h5>Skills</h5>
+            {% if template_data.show.skills %}
+            <h5>Skills
+              {% if template_data.is_owner and not template_data.profile.show_skills %}
+                <span class="badge bg-secondary">Hidden from recruiters</span>
+              {% endif %}
+            </h5>
             <p>
               {% for skill in template_data.profile.skills.all %}
                 {{ skill }}{% if not forloop.last %}, {% endif %}
@@ -45,8 +51,14 @@
                 <span class="text-muted">No skills added yet.</span>
               {% endfor %}
             </p>
+            {% endif %}
 
-            <h5>Education</h5>
+            {% if template_data.show.education %}
+            <h5>Education
+              {% if template_data.is_owner and not template_data.profile.show_education %}
+                <span class="badge bg-secondary">Hidden from recruiters</span>
+              {% endif %}
+            </h5>
             {% for education in template_data.profile.education.all %}
               <p>
                 <strong>{{ education.school }}</strong>
@@ -59,8 +71,14 @@
             {% empty %}
               <p class="text-muted">No education added yet.</p>
             {% endfor %}
+            {% endif %}
 
-            <h5>Work Experience</h5>
+            {% if template_data.show.experience %}
+            <h5>Work Experience
+              {% if template_data.is_owner and not template_data.profile.show_experience %}
+                <span class="badge bg-secondary">Hidden from recruiters</span>
+              {% endif %}
+            </h5>
             {% for experience in template_data.profile.experience.all %}
               <p>
                 <strong>{{ experience.title }}</strong> at {{ experience.company }}
@@ -72,8 +90,14 @@
             {% empty %}
               <p class="text-muted">No work experience added yet.</p>
             {% endfor %}
+            {% endif %}
 
-            <h5>Projects</h5>
+            {% if template_data.show.projects %}
+            <h5>Projects
+              {% if template_data.is_owner and not template_data.profile.show_projects %}
+                <span class="badge bg-secondary">Hidden from recruiters</span>
+              {% endif %}
+            </h5>
             {% for project in template_data.profile.projects.all %}
               <p>
                 <strong>{{ project.title }}</strong>
@@ -82,15 +106,22 @@
             {% empty %}
               <p class="text-muted">No projects added yet.</p>
             {% endfor %}
+            {% endif %}
 
-            <h5>Links</h5>
+            {% if template_data.show.links %}
+            <h5>Links
+              {% if template_data.is_owner and not template_data.profile.show_links %}
+                <span class="badge bg-secondary">Hidden from recruiters</span>
+              {% endif %}
+            </h5>
             <p>
               {% for link in template_data.profile.links.all %}
-                <a href="{{ link.url }}" target="_blank">{{ link.label }}</a>{% if not forloop.last %} | {% endif %}
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>{% if not forloop.last %} | {% endif %}
               {% empty %}
                 <span class="text-muted">No links added yet.</span>
               {% endfor %}
             </p>
+            {% endif %}
           </div>
         </div>
       </div>

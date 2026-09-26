@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import (CustomUserCreationForm, JobSeekerProfileForm, EducationFormSet,
     WorkExperienceFormSet, ProjectFormSet, LinkFormSet)
-from .models import JobSeekerProfile
+from .models import JobSeekerProfile, RecruiterProfile
 
 def is_job_seeker(user):
     return user.is_authenticated and user.is_job_seeker
@@ -20,6 +20,9 @@ def signup(request):
             user = form.save()
             if user.is_job_seeker:
                 JobSeekerProfile.objects.create(user=user)
+            elif user.is_recruiter:
+                RecruiterProfile.objects.create(user=user,
+                    company_name=form.cleaned_data['company_name'])
             return redirect('home.index')
         else:
             template_data['form'] = form
@@ -38,45 +41,52 @@ def profile_show(request, id):
         return redirect('home.index')
     if request.user != profile.user and not request.user.is_recruiter:
         return redirect('home.index')
-    if request.user != profile.user and not profile.is_public:
-        return redirect('home.index')
+    is_owner = request.user == profile.user
     template_data = {}
     template_data['title'] = profile.user.username
     template_data['profile'] = profile
-    template_data['is_owner'] = request.user == profile.user
+    template_data['is_owner'] = is_owner
+    # the owner sees everything; recruiters only see sections marked visible
+    template_data['show'] = {
+        'headline': is_owner or profile.show_headline,
+        'location': is_owner or profile.show_location,
+        'skills': is_owner or profile.show_skills,
+        'education': is_owner or profile.show_education,
+        'experience': is_owner or profile.show_experience,
+        'projects': is_owner or profile.show_projects,
+        'links': is_owner or profile.show_links,
+    }
     return render(request, 'accounts/profile_show.html', {'template_data': template_data})
 
 def profile_edit(request):
     if not is_job_seeker(request.user):
         return redirect('home.index')
     profile, created = JobSeekerProfile.objects.get_or_create(user=request.user)
-    template_data = {}
-    template_data['title'] = 'Edit Profile'
-    template_data['profile'] = profile
-    if request.method == 'GET':
-        template_data['form'] = JobSeekerProfileForm(instance=profile)
-        template_data['formsets'] = [
-            ('Education', EducationFormSet(instance=profile, prefix='education')),
-            ('Work Experience', WorkExperienceFormSet(instance=profile, prefix='experience')),
-            ('Projects', ProjectFormSet(instance=profile, prefix='projects')),
-            ('Links', LinkFormSet(instance=profile, prefix='links')),
-        ]
-        return render(request, 'accounts/profile_edit.html', {'template_data': template_data})
-    elif request.method == 'POST':
-        form = JobSeekerProfileForm(request.POST, instance=profile)
-        formsets = [
-            ('Education', EducationFormSet(request.POST, instance=profile, prefix='education')),
-            ('Work Experience', WorkExperienceFormSet(request.POST, instance=profile, prefix='experience')),
-            ('Projects', ProjectFormSet(request.POST, instance=profile, prefix='projects')),
-            ('Links', LinkFormSet(request.POST, instance=profile, prefix='links')),
-        ]
-        if form.is_valid() and all(formset.is_valid() for title, formset in formsets):
+    data = request.POST if request.method == 'POST' else None
+    form = JobSeekerProfileForm(data, instance=profile)
+    formsets = [
+        ('Education', EducationFormSet(data, instance=profile, prefix='education'), form['show_education']),
+        ('Work Experience', WorkExperienceFormSet(data, instance=profile, prefix='experience'), form['show_experience']),
+        ('Projects', ProjectFormSet(data, instance=profile, prefix='projects'), form['show_projects']),
+        ('Links', LinkFormSet(data, instance=profile, prefix='links'), form['show_links']),
+    ]
+    if request.method == 'POST':
+        form_valid = form.is_valid()
+        formsets_valid = all([formset.is_valid() for title, formset, toggle in formsets])
+        if form_valid and formsets_valid:
             form.save()
-            for title, formset in formsets:
+            for title, formset, toggle in formsets:
                 formset.save()
             messages.success(request, 'Your profile was saved.')
             return redirect('accounts.profile_show', id=profile.id)
-        else:
-            template_data['form'] = form
-            template_data['formsets'] = formsets
-            return render(request, 'accounts/profile_edit.html', {'template_data': template_data})
+    template_data = {}
+    template_data['title'] = 'Edit Profile'
+    template_data['profile'] = profile
+    template_data['form'] = form
+    template_data['fields'] = [
+        (form['headline'], form['show_headline']),
+        (form['location'], form['show_location']),
+        (form['skills'], form['show_skills']),
+    ]
+    template_data['formsets'] = formsets
+    return render(request, 'accounts/profile_edit.html', {'template_data': template_data})

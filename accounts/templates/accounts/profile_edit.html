@@ -10,10 +10,19 @@
             <hr />
             <form method="POST">
               {% csrf_token %}
-              {{ template_data.form.as_p }}
-
-              {% for title, formset in template_data.formsets %}
+              {% for field, toggle in template_data.fields %}
+                <p>{{ field.label_tag }} {{ field }} {{ field.errors }}</p>
+                <div class="form-check mb-3">
+                  {{ toggle }}
+                  <label class="form-check-label" for="{{ toggle.id_for_label }}">{{ toggle.label }}</label>
+                </div>
+              {% endfor %}
+              {% for title, formset, toggle in template_data.formsets %}
                 <h4 class="mt-4">{{ title }}</h4>
+                <div class="form-check mb-2">
+                  {{ toggle }}
+                  <label class="form-check-label" for="{{ toggle.id_for_label }}">{{ toggle.label }}</label>
+                </div>
                 {{ formset.management_form }}
                 {{ formset.non_form_errors }}
                 {% for form in formset %}

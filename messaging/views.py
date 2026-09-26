@@ -25,10 +25,6 @@ def inbox(request):
     template_data = {}
     template_data['title'] = 'Messages'
     template_data['people'] = people
-    if is_recruiter(request.user):
-        # private profiles are left out of the list
-        template_data['candidates'] = User.objects.filter(role=User.Role.JOB_SEEKER,
-            seeker_profile__is_public=True)
     return render(request, 'messaging/inbox.html', {'template_data': template_data})
 
 def thread(request, id):

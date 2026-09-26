@@ -97,20 +97,19 @@ def candidates(request):
 
     candidates = JobSeekerProfile.objects.filter(
         user__role=User.Role.JOB_SEEKER,
-        is_public=True
     ).select_related('user').prefetch_related('skills', 'projects')
 
     location = request.GET.get('location')
     if location:
-        candidates = candidates.filter(location__icontains=location)
+        candidates = candidates.filter(show_location=True, location__icontains=location)
 
     skill = request.GET.get('skill')
     if skill:
-        candidates = candidates.filter(skills__id=skill)
+        candidates = candidates.filter(show_skills=True, skills__id=skill)
 
     project = request.GET.get('project')
     if project:
-        candidates = candidates.filter(
+        candidates = candidates.filter(show_projects=True).filter(
             Q(projects__title__icontains=project) |
             Q(projects__description__icontains=project)
         )

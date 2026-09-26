@@ -16,22 +16,14 @@
           </div>
         {% empty %}
           <p>No messages yet.</p>
+          {% if user.is_recruiter %}
+            <p class="text-muted">
+              To start a conversation, use the Message button on a candidate's
+              profile, in <a href="{% url 'jobs.candidates' %}">Find Candidates</a>,
+              or on an applicant in one of your job pipelines.
+            </p>
+          {% endif %}
         {% endfor %}
-        {% if template_data.candidates %}
-          <hr />
-          <h4>Contact a Candidate</h4>
-          {% for candidate in template_data.candidates %}
-            <div class="card shadow p-3 mb-3 rounded">
-              <div class="card-body">
-                <h4>{{ candidate.username }}</h4>
-                <a href="{% url 'messaging.thread' candidate.id %}"
-                  class="btn bg-dark text-white">Message</a>
-                <a href="{% url 'messaging.email' candidate.id %}"
-                  class="btn btn-outline-secondary">Email</a>
-              </div>
-            </div>
-          {% endfor %}
-        {% endif %}
       </div>
     </div>
   </div>

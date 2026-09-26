@@ -15,11 +15,33 @@ class CustomUserAdmin(UserAdmin):
         ('Role', {'fields': ('role',)}),
     )
 
+class EducationInline(admin.TabularInline):
+    model = Education
+    extra = 0
+
+class WorkExperienceInline(admin.StackedInline):
+    model = WorkExperience
+    extra = 0
+
+class ProjectInline(admin.StackedInline):
+    model = Project
+    extra = 0
+
+class LinkInline(admin.TabularInline):
+    model = Link
+    extra = 0
+
+class JobSeekerProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'headline', 'location']
+    search_fields = ['user__username', 'headline', 'location']
+    filter_horizontal = ['skills']
+    inlines = [EducationInline, WorkExperienceInline, ProjectInline, LinkInline]
+
+class RecruiterProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'company_name']
+    search_fields = ['user__username', 'company_name']
+
+admin.site.register(RecruiterProfile, RecruiterProfileAdmin)
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(RecruiterProfile)
-admin.site.register(JobSeekerProfile)
+admin.site.register(JobSeekerProfile, JobSeekerProfileAdmin)
 admin.site.register(Skill)
-admin.site.register(Education)
-admin.site.register(WorkExperience)
-admin.site.register(Project)
-admin.site.register(Link)

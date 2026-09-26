@@ -29,7 +29,13 @@ class JobSeekerProfile(models.Model):
     headline = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=200, blank=True, default="")
     skills = models.ManyToManyField(Skill, blank=True, related_name="seekers")
-    is_public = models.BooleanField(default=True)
+    show_headline = models.BooleanField(default=True, verbose_name="Show headline to recruiters")
+    show_location = models.BooleanField(default=True, verbose_name="Show location to recruiters")
+    show_skills = models.BooleanField(default=True, verbose_name="Show skills to recruiters")
+    show_education = models.BooleanField(default=True, verbose_name="Show education to recruiters")
+    show_experience = models.BooleanField(default=True, verbose_name="Show work experience to recruiters")
+    show_projects = models.BooleanField(default=True, verbose_name="Show projects to recruiters")
+    show_links = models.BooleanField(default=True, verbose_name="Show links to recruiters")
     def __str__(self):
         return self.user.username
 
