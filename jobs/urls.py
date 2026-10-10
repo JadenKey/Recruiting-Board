@@ -10,5 +10,6 @@ urlpatterns = [
     path('applications/<int:id>/status', views.application_status,
         name='jobs.application_status'),
     path('<int:id>/pipeline', views.pipeline, name='jobs.pipeline'),
-    path('applications', views.applications, name='jobs.applications')
+    path('applications', views.applications, name='jobs.applications'),
+    path('applications/<int:id>/candidate/', views.candidate_details, name='jobs.candidate_details'),
 ]

@@ -14,6 +14,19 @@
 
                 <div class="col-md-6">
                   <p>
+                    <label for="id_name">Candidate Name:</label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="id_name"
+                      class="form-control"
+                      value="{{ template_data.filters.name|default:'' }}"
+                    />
+                  </p>
+                </div>
+
+                <div class="col-md-6">
+                  <p>
                     <label for="id_location">Location:</label>
                     <input
                       type="text"

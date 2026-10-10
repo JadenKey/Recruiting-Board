@@ -99,6 +99,10 @@ def candidates(request):
         user__role=User.Role.JOB_SEEKER,
     ).select_related('user').prefetch_related('skills', 'projects')
 
+    name = request.GET.get('name', '').strip()
+    if name:
+        candidates = candidates.filter(user__username__icontains=name)
+
     location = request.GET.get('location')
     if location:
         candidates = candidates.filter(show_location=True, location__icontains=location)
@@ -202,3 +206,16 @@ def application_status(request, id):
             application.save()
             messages.success(request, f'Moved {application.seeker.username} to {application.get_status_display()}.')
     return redirect('jobs.pipeline', id=application.job.id)
+
+def candidate_details(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    application = get_object_or_404(Application.objects.select_related('seeker', 'job'), id=id, job__recruiter=request.user)
+    candidate = get_object_or_404(JobSeekerProfile.objects.select_related('user').prefetch_related('skills', 'education', 'experience', 'projects', 'links',), user=application.seeker)
+
+    template_data = {}
+    template_data['title'] = 'Candidate Details'
+    template_data['application'] = application
+    template_data['candidate'] = candidate
+
+    return render(request, 'jobs/candidate_details.html', {'template_data': template_data})
