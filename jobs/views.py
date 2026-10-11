@@ -236,9 +236,7 @@ def candidate_recommendations(request, id):
             matched_ids = required_skills.keys() & candidate_skills.keys()
             if not matched_ids:
                 continue
-            score = round(
-                len(matched_ids) / len(required_skills) * 100, 1
-            )
+            score = round(len(matched_ids) / len(required_skills) * 100, 1)
             recommendations.append({
                 "profile": profile,
                 "score": score,
