@@ -37,6 +37,8 @@
                 class="btn btn-rb px-4 py-2 fw-semibold">Edit</a>
               <a href="{% url 'jobs.pipeline' job.id %}"
                 class="btn btn-rb-secondary px-4 py-2 fw-semibold">Pipeline</a>
+              <a href="{% url 'jobs.candidate_recommendations' job.id %}"
+                class="btn btn-rb-secondary px-4 py-2 fw-semibold">Candidates</a>
             </div>
           </div>
         {% empty %}

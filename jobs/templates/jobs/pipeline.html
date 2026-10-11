@@ -40,7 +40,7 @@
                     <p>{{ application.message }}</p>
                   {% endif %}
                   <a href="{% url 'jobs.candidate_details' application.id %}"
-                    class="btn btn-rb px-3 py-2 fw-semibold mb-2" draggable="false">Candidate Details</a>
+                    class="btn btn-rb px-3 py-2 fw-semibold mb-2" draggable="false">Details</a>
                   <a href="{% url 'messaging.thread' application.seeker.id %}"
                     class="btn btn-rb-secondary px-4 py-2 fw-semibold" draggable="false">Message</a>
                   <a href="{% url 'messaging.email' application.seeker.id %}"

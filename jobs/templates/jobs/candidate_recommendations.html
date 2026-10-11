@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h2 class="mb-0">Recommended Candidates</h2>
+          <a href="{% url 'jobs.index' %}"
+            class="btn btn-rb-secondary px-4 py-2 fw-semibold">
+            Back to My Job Posts
+          </a>
+        </div>
+        <h5 class="text-muted mb-4">
+          {{ template_data.job.title }} at {{ template_data.job.company }}
+        </h5>
+        {% for recommendation in template_data.recommendations %}
+          <div class="card rb-card-background shadow p-3 mb-4 rounded">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <h4>{{ recommendation.profile.user.username }}</h4>
+                  {% if recommendation.status %}
+                    <span class="badge bg-success">{{ recommendation.status|title }}</span>
+                  {% endif %}
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{% url 'accounts.profile_show' recommendation.profile.id %}"
+                     class="btn btn-rb px-3 py-2 fw-semibold">View Profile</a>
+                  <a href="{% url 'messaging.thread' recommendation.profile.user.id %}"
+                     class="btn btn-rb-secondary px-3 py-2 fw-semibold">Message</a>
+                  <a href="{% url 'messaging.email' recommendation.profile.user.id %}"
+                     class="btn btn-rb-secondary px-3 py-2 fw-semibold">Email</a>
+                </div>
+              </div>
+              <hr />
+              <div class="row align-items-stretch">
+                <div class="col-md-6 d-flex justify-content-center align-items-center border-end border-secondary px-3 mb-4 mb-md-0">
+                  <div class="text-center">
+                    <h5 class="mb-3">Match Score</h5>
+                    {% with score=recommendation.score|default:0 %}
+                    <div class="d-flex flex-column align-items-center gap-2">
+                      <div
+                        class="skill-match-circle
+                          {% if score >= 80 %}
+                            match-green
+                          {% elif score >= 60 %}
+                            match-yellow
+                          {% elif score >= 40 %}
+                            match-orange
+                          {% else %}
+                            match-red
+                          {% endif %}"
+                        role="img"
+                        aria-label="Skills match: {{ score }} percent"
+                        style="--score: {{ score }};">
+                        <div class="skill-match-inner">
+                          <span class="skill-match-number">{{ score }}</span>
+                          <span class="skill-match-percent">%</span>
+                        </div>
+                      </div>
+                      <p class="mb-0 text-dark">
+                        {% if score >= 80 %}
+                          Excellent
+                        {% elif score >= 60 %}
+                          Good
+                        {% elif score >= 40 %}
+                          Fair
+                        {% else %}
+                          Low
+                        {% endif %}
+                      </p>
+                    </div>
+                    {% endwith %}
+                  </div>
+                </div>
+              <div class="col-md-6 d-flex justify-content-center align-items-center px-3">
+                  <div class="w-100 text-center" style="max-width: 350px;">
+                  <h5 class="mb-3">Matched Skills</h5>
+                  <div class="mb-4">
+                    {% for skill in recommendation.matched_skills %}
+                      <span class="badge bg-success me-1 mb-1">
+                        {{ skill }}
+                      </span>
+                    {% empty %}
+                      <span class="text-muted">No matched skills.</span>
+                    {% endfor %}
+                  </div>
+                  <h5 class="mb-3">Missing Skills</h5>
+                  <div>
+                    {% for skill in recommendation.missing_skills %}
+                      <span class="badge bg-secondary me-1 mb-1">
+                        {{ skill }}
+                      </span>
+                    {% empty %}
+                      <span class="text-muted">No missing skills.</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="card rb-card-background shadow p-3 mb-4 rounded">
+          <div class="card-body text-center">
+            <h5>No matching candidates found.</h5>
+            {% if not template_data.job_has_skills %}
+              <p class="text-muted mb-0 mt-2">
+                This job doesn't have any required skills listed. Please edit the job post and add the required skills to find matching candidates.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

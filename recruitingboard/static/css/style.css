@@ -100,3 +100,60 @@ body {
 .rb-card, .rb-card-background, .card {
   animation: fadeInUp 0.8s ease-out forwards;
 }
+
+@property --progress-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.skill-match-circle {
+  --match-color: #dc3545;
+  --progress-angle: 0deg;
+  width: 120px;
+  height: 120px;
+  min-width: 120px;
+  flex: 0 0 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--match-color) var(--progress-angle), #e9ecef var(--progress-angle));
+  animation: draw-match-circle 1s ease-out forwards;
+}
+.skill-match-inner {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex: 0 0 96px;
+  border-radius: 50%;
+  background: var(--bs-body-bg, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.skill-match-number {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--match-color);
+  line-height: 1;
+}
+.skill-match-percent {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--match-color);
+}
+.match-green  {
+  --match-color: #198754;
+}
+.match-yellow {
+  --match-color: #ffc107; }
+.match-orange {
+  --match-color: #fd7e14;
+}
+.match-red {
+  --match-color: #dc3545;
+}
+@keyframes draw-match-circle {
+  from {--progress-angle: 0deg;}
+  to {--progress-angle: calc(var(--score, 0) * 3.6deg);}
+}

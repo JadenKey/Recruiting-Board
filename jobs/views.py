@@ -219,3 +219,39 @@ def candidate_details(request, id):
     template_data['candidate'] = candidate
 
     return render(request, 'jobs/candidate_details.html', {'template_data': template_data})
+
+def candidate_recommendations(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    job = get_object_or_404(Job, id=id, recruiter=request.user)
+    required_skills = {skill.id: skill.skill.strip() for skill in job.skills.all()}
+    status = dict(Application.objects.filter(job=job).values_list("seeker_id", "status"))
+    recommendations = []
+    if required_skills:
+        profiles = (JobSeekerProfile.objects.filter(user__role=User.Role.JOB_SEEKER).select_related("user").prefetch_related("skills"))
+        for profile in profiles:
+            if not profile.show_skills:
+                continue
+            candidate_skills = {skill.id: skill.skill.strip() for skill in profile.skills.all()}
+            matched_ids = required_skills.keys() & candidate_skills.keys()
+            if not matched_ids:
+                continue
+            score = round(
+                len(matched_ids) / len(required_skills) * 100, 1
+            )
+            recommendations.append({
+                "profile": profile,
+                "score": score,
+                "matched_skills": sorted([required_skills[key] for key in matched_ids], key=str.casefold),
+                "missing_skills": sorted([name for key, name in required_skills.items()if key not in candidate_skills],key=str.casefold),
+                "status": status.get(profile.user_id)
+            })
+    recommendations.sort(key=lambda item: (-item["score"], item["profile"].id))
+    job_has_skills = job.skills.exists()
+
+    template_data = {}
+    template_data['job'] = job
+    template_data['recommendations'] = recommendations
+    template_data['job_has_skills'] = job_has_skills
+
+    return render(request, "jobs/candidate_recommendations.html", {'template_data': template_data})
