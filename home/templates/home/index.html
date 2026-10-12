@@ -90,6 +90,15 @@
               <a href="{% url 'admin:index' %}" class="btn btn-rb px-4 py-2 fw-semibold">
                 Admin Panel
               </a>
+              <a href="{% url 'jobs.export_csv' 'users' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Export Users CSV
+              </a>
+              <a href="{% url 'jobs.export_csv' 'jobs' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Export Jobs CSV
+              </a>
+              <a href="{% url 'jobs.export_csv' 'applications' %}" class="btn btn-rb px-4 py-2 fw-semibold">
+                Export Applications CSV
+              </a>
             </div>
             {% endif %}
           </div>

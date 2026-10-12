@@ -6,6 +6,8 @@ from django.db.models import Q
 from accounts.models import Skill, JobSeekerProfile, User
 from .models import Job, Application
 from .forms import JobForm, ApplicationForm
+import csv
+from django.http import HttpResponse
 
 def is_recruiter(user):
     return user.is_authenticated and user.is_recruiter
@@ -280,3 +282,30 @@ def candidate_recommendations(request, id):
     template_data['job_has_skills'] = job_has_skills
 
     return render(request, "jobs/candidate_recommendations.html", {'template_data': template_data})
+
+def export_csv(request, kind):
+    if not request.user.is_superuser:
+        return redirect('home.index')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="' + kind + '.csv"'
+    writer = csv.writer(response)
+
+    if kind == 'users':
+        writer.writerow(['Username', 'Email', 'Role', 'Active', 'Date Joined'])
+        for user in User.objects.all():
+            writer.writerow([user.username, user.email, user.role, user.is_active, user.date_joined])
+    elif kind == 'jobs':
+        writer.writerow(['Title', 'Company', 'Recruiter', 'Location', 'Workplace', 'Visa', 'Created'])
+        for job in Job.objects.all():
+            writer.writerow([job.title, job.company, job.recruiter.username, job.location,
+                job.workplace, job.visa_sponsorship, job.created_at])
+    elif kind == 'applications':
+        writer.writerow(['Seeker', 'Job', 'Company', 'Status', 'Applied On'])
+        for application in Application.objects.all():
+            writer.writerow([application.seeker.username, application.job.title,
+                application.job.company, application.status, application.created_at])
+    else:
+        return redirect('home.index')
+
+    return response
