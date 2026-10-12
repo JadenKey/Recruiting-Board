@@ -157,3 +157,11 @@ body {
   from {--progress-angle: 0deg;}
   to {--progress-angle: calc(var(--score, 0) * 3.6deg);}
 }
+.match-pill {
+  background-color: var(--match-color);
+  color: #fff;
+  font-weight: 600;
+}
+.match-pill.match-yellow {
+  color: #212529;
+}

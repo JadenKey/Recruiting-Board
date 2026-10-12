@@ -74,6 +74,14 @@
                   {% if template_data.filters.visa_sponsorship %}checked{% endif %} />
                 <label for="id_visa_sponsorship">Visa sponsorship only</label>
               </p>
+              {% if user.is_authenticated and user.is_job_seeker %}
+                <p>
+                  <input type="checkbox" name="recommended"
+                    id="id_recommended" class="form-check-input"
+                    {% if template_data.recommended %}checked{% endif %} />
+                  <label for="id_recommended">Recommended for me (jobs that match my skills)</label>
+                </p>
+              {% endif %}
               <button type="submit"
                 class="btn btn-rb px-4 py-2 fw-semibold">Search
               </button>
@@ -82,6 +90,13 @@
             </form>
           </div>
         </div>
+        {% if template_data.recommended %}
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h4 class="mb-0">Recommended for you</h4>
+            <a href="{% url 'accounts.profile_edit' %}"
+              class="btn btn-rb-secondary px-3 py-2 fw-semibold">Update My Skills</a>
+          </div>
+        {% endif %}
         {% for job in template_data.jobs %}
           <div class="card rb-card-background shadow p-3 mb-4 rounded">
             <div class="card-body">
@@ -97,7 +112,30 @@
                   | Visa sponsorship available
                 {% endif %}
               </p>
-              {% if job.skills.all %}
+              {% if job.match %}
+                {% with score=job.match.score %}
+                <p class="mb-2">
+                  <span class="badge rounded-pill match-pill p-2
+                    {% if score >= 80 %}match-green{% elif score >= 60 %}match-yellow{% elif score >= 40 %}match-orange{% else %}match-red{% endif %}">
+                    {{ score }}% skill match
+                  </span>
+                </p>
+                {% endwith %}
+                <p class="mb-1">
+                  Skills you have:
+                  {% for skill in job.match.matched_skills %}
+                    <span class="badge bg-success me-1">{{ skill }}</span>
+                  {% endfor %}
+                </p>
+                {% if job.match.missing_skills %}
+                  <p>
+                    Skills to learn:
+                    {% for skill in job.match.missing_skills %}
+                      <span class="badge bg-secondary me-1">{{ skill }}</span>
+                    {% endfor %}
+                  </p>
+                {% endif %}
+              {% elif job.skills.all %}
                 <p>
                   Skills:
                   {% for skill in job.skills.all %}
@@ -130,7 +168,16 @@
             </div>
           </div>
         {% empty %}
-          <p>No jobs matched your search.</p>
+          {% if template_data.recommended and not template_data.has_skills %}
+            <p>
+              Add skills to your profile to get recommendations.
+              <a href="{% url 'accounts.profile_edit' %}">Edit your profile</a>
+            </p>
+          {% elif template_data.recommended %}
+            <p>No new jobs match your skills and filters right now. Try clearing some filters or adding more skills to your profile.</p>
+          {% else %}
+            <p>No jobs matched your search.</p>
+          {% endif %}
         {% endfor %}
       </div>
     </div>

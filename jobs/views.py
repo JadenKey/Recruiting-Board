@@ -58,6 +58,17 @@ def edit(request, id):
             template_data['form'] = form
             return render(request, 'jobs/form.html', {'template_data': template_data})
 
+def skill_match(job, my_skills):
+    required_skills = {skill.id: skill.skill.strip() for skill in job.skills.all()}
+    matched_ids = required_skills.keys() & my_skills.keys()
+    if not matched_ids:
+        return None
+    return {
+        "score": round(len(matched_ids) / len(required_skills) * 100, 1),
+        "matched_skills": sorted([required_skills[key] for key in matched_ids], key=str.casefold),
+        "missing_skills": sorted([name for key, name in required_skills.items() if key not in my_skills], key=str.casefold),
+    }
+
 def search(request):
     jobs = Job.objects.all()
     title = request.GET.get('title')
@@ -82,13 +93,29 @@ def search(request):
         jobs = jobs.filter(visa_sponsorship=True)
     template_data = {}
     template_data['title'] = 'Search Jobs'
-    template_data['jobs'] = jobs.distinct()
     template_data['skills'] = Skill.objects.all()
     template_data['filters'] = request.GET
+    template_data['recommended'] = False
     if is_job_seeker(request.user):
-        template_data['applied_ids'] = set(
+        applied_ids = set(
             Application.objects.filter(seeker=request.user).values_list('job_id', flat=True)
         )
+        template_data['applied_ids'] = applied_ids
+        profile = JobSeekerProfile.objects.filter(user=request.user).first()
+        my_skills = {s.id: s.skill.strip() for s in profile.skills.all()} if profile else {}
+        template_data['has_skills'] = bool(my_skills)
+        recommended = bool(request.GET.get('recommended'))
+        template_data['recommended'] = recommended
+        if recommended:
+            jobs = jobs.filter(skills__id__in=my_skills.keys()).exclude(id__in=applied_ids)
+        jobs = list(jobs.distinct().prefetch_related('skills'))
+        for job in jobs:
+            job.match = skill_match(job, my_skills)
+        if recommended:
+            jobs.sort(key=lambda job: (-job.match["score"], -len(job.match["matched_skills"]), -job.created_at.timestamp()))
+    else:
+        jobs = jobs.distinct().prefetch_related('skills')
+    template_data['jobs'] = jobs
     return render(request, 'jobs/search.html', {'template_data': template_data})
 
 def candidates(request):
