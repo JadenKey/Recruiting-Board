@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import (CustomUserCreationForm, JobSeekerProfileForm, EducationFormSet,
     WorkExperienceFormSet, ProjectFormSet, LinkFormSet)
 from .models import JobSeekerProfile, RecruiterProfile
+from reports.models import Report
 
 def is_job_seeker(user):
     return user.is_authenticated and user.is_job_seeker
@@ -46,6 +47,7 @@ def profile_show(request, id):
     template_data['title'] = profile.user.username
     template_data['profile'] = profile
     template_data['is_owner'] = is_owner
+    template_data['has_reported'] = Report.objects.filter(reporter=request.user, reported_user=profile.user).exists()
     # the owner sees everything; recruiters only see sections marked visible
     template_data['show'] = {
         'headline': is_owner or profile.show_headline,

@@ -153,6 +153,17 @@
               {% if user.is_authenticated and user.is_job_seeker %}
                 {% if job.id in template_data.applied_ids %}
                   <span class="badge bg-success p-2">Applied</span>
+                  {% if job.has_reported %}
+                      <button class="btn btn-rb-secondary px-3 py-2 fw-semibold"
+                        type="button" disabled>
+                        <i class="fas fa-flag"></i> Reported
+                      </button>
+                    {% else %}
+                      <a href="{% url 'reports.job' job.id %}"
+                        class="btn btn-rb-secondary px-3 py-2 fw-semibold">
+                        <i class="fas fa-flag"></i>   Report
+                      </a>
+                    {% endif %}
                 {% else %}
                   <form method="POST" action="{% url 'jobs.apply' job.id %}">
                     {% csrf_token %}
@@ -166,6 +177,17 @@
                     <button type="button" class="btn btn-rb-secondary px-4 py-2 fw-semibold"
                       data-bs-toggle="collapse" data-bs-target="#message-{{ job.id }}"
                       aria-expanded="false" aria-controls="message-{{ job.id }}">Add a message</button>
+                    {% if job.has_reported %}
+                      <button class="btn btn-rb-secondary px-3 py-2 fw-semibold"
+                        type="button" disabled>
+                        <i class="fas fa-flag"></i> Reported
+                      </button>
+                    {% else %}
+                      <a href="{% url 'reports.job' job.id %}"
+                        class="btn btn-rb-secondary px-3 py-2 fw-semibold">
+                        <i class="fas fa-flag"></i>   Report
+                      </a>
+                    {% endif %}
                   </form>
                 {% endif %}
               {% elif not user.is_authenticated %}

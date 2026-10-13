@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import Q
 from accounts.models import Skill, JobSeekerProfile, User
+from reports.models import Report
 from .models import Job, Application
 from .forms import JobForm, ApplicationForm
 import csv
@@ -124,6 +125,12 @@ def search(request):
     else:
         jobs = jobs.distinct().prefetch_related('skills')
     template_data['jobs'] = jobs
+    if request.user.is_authenticated:
+        reported_job_ids = set(Report.objects.filter(reporter=request.user, reported_job__in=jobs).values_list('reported_job_id', flat=True))
+    else:
+        reported_job_ids = set()
+    for job in jobs:
+        job.has_reported = job.id in reported_job_ids
     return render(request, 'jobs/search.html', {'template_data': template_data})
 
 def job_map(request):
@@ -281,6 +288,7 @@ def candidate_details(request, id):
     template_data['title'] = 'Candidate Details'
     template_data['application'] = application
     template_data['candidate'] = candidate
+    template_data['has_reported'] = Report.objects.filter(reporter=request.user, reported_user=candidate.user).exists()
 
     return render(request, 'jobs/candidate_details.html', {'template_data': template_data})
 

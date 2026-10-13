@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import User
+from reports.models import Report
 from .models import Message
 from .forms import MessageForm, EmailForm
 
@@ -38,6 +39,7 @@ def thread(request, id):
     template_data['other'] = other
     template_data['conversation'] = Message.objects.filter(
         Q(sender=request.user, recipient=other) | Q(sender=other, recipient=request.user))
+    template_data['has_reported'] = Report.objects.filter(reporter=request.user, reported_user=other).exists()
     if request.method == 'GET':
         template_data['form'] = MessageForm()
         return render(request, 'messaging/thread.html', {'template_data': template_data})
