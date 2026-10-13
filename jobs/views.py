@@ -8,6 +8,7 @@ from .models import Job, Application
 from .forms import JobForm, ApplicationForm
 import csv
 from django.http import HttpResponse
+from .geocoding import set_coordinates
 
 def is_recruiter(user):
     return user.is_authenticated and user.is_recruiter
@@ -35,6 +36,7 @@ def create(request):
         if form.is_valid():
             job = form.save(commit=False)
             job.recruiter = request.user
+            set_coordinates(job)
             job.save()
             form.save_m2m()
             return redirect('jobs.index')
@@ -54,7 +56,11 @@ def edit(request, id):
     elif request.method == 'POST':
         form = JobForm(request.POST, instance=job)
         if form.is_valid():
-            form.save()
+            job = form.save(commit=False)
+            if "location" in form.changed_data or job.latitude is None:
+                set_coordinates(job)
+            job.save()
+            form.save_m2m()
             return redirect('jobs.index')
         else:
             template_data['form'] = form
@@ -119,6 +125,35 @@ def search(request):
         jobs = jobs.distinct().prefetch_related('skills')
     template_data['jobs'] = jobs
     return render(request, 'jobs/search.html', {'template_data': template_data})
+
+def job_map(request):
+    jobs = Job.objects.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    )
+
+    job_locations = []
+
+    for job in jobs:
+        job_locations.append({
+            "id": job.id,
+            "title": job.title,
+            "company": job.company,
+            "location": job.location,
+            "latitude": job.latitude,
+            "longitude": job.longitude,
+        })
+
+    template_data = {
+        "title": "Job Map",
+        "job_locations": job_locations,
+    }
+
+    return render(
+        request,
+        "jobs/map.html",
+        {"template_data": template_data}
+    )
 
 def candidates(request):
     if not is_recruiter(request.user):

@@ -90,6 +90,13 @@
             </form>
           </div>
         </div>
+        <div class="d-flex justify-content-end mb-3">
+          <a href="{% url 'jobs.map' %}"
+            class="btn btn-rb px-4 py-2 fw-semibold">
+            <i class="fa-solid fa-map me-2"></i>
+            Map View
+          </a>
+        </div>
         {% if template_data.recommended %}
           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h4 class="mb-0">Recommended for you</h4>
@@ -98,7 +105,7 @@
           </div>
         {% endif %}
         {% for job in template_data.jobs %}
-          <div class="card rb-card-background shadow p-3 mb-4 rounded">
+          <div id="job-{{ job.id }}" class="card rb-card-background shadow p-3 mb-4 rounded">
             <div class="card-body">
               <h4>{{ job.title }}</h4>
               <h6 class="text-muted">{{ job.company }} - {{ job.location }}</h6>

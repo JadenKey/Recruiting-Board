@@ -11,6 +11,8 @@ class Job(models.Model):
     company = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     location = models.CharField(max_length=200)
+    latitude = models.FloatField(null=True, blank=True, editable=False)
+    longitude = models.FloatField(null=True, blank=True, editable=False)
     salary_min = models.IntegerField(null=True, blank=True)
     salary_max = models.IntegerField(null=True, blank=True)
     workplace = models.CharField(choices=Workplace.choices, max_length=200, default=Workplace.ONSITE)

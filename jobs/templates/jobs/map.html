@@ -1,0 +1,176 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.css"
+/>
+<style>
+  #job-map {
+    height: 550px;
+    width: 100%;
+    border-radius: 8px;
+  }
+  .rb-job-marker {
+    width: 34px;
+    height: 34px;
+    background-color: #9c7032;
+    color: white;
+    border: 2px solid #543d2f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  }
+  .rb-job-popup {
+    color: #543d2f;
+    font-family: 'Poppins', sans-serif;
+    padding: 8px;
+  }
+  .rb-job-popup strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 5px;
+  }
+  .rb-job-popup p {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .rb-job-popup a {
+    color: #9c7032;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .rb-job-popup + .rb-job-popup {
+    border-top: 1px solid #d4b89d;
+  }
+</style>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2>Job Map</h2>
+      <p class="text-muted">
+        Explore available job opportunities on the map.
+      </p>
+    </div>
+    <a href="{% url 'jobs.search' %}"
+      class="btn btn-rb-secondary px-4 py-2 fw-semibold">
+      Back to Jobs
+    </a>
+  </div>
+  <hr />
+  <div class="card rb-card-background shadow rounded p-3">
+    <div id="job-map"></div>
+    <p class="small mt-3 mb-0">
+      Click a marker to view the job details.
+    </p>
+  </div>
+</div>
+{{ template_data.job_locations|json_script:"job-data" }}
+
+<!-- interactive map based on https://openfreemap.org/quick_start/ -->
+<!-- MapLibre documentation: https://maplibre.org/maplibre-gl-js/docs/ -->
+<script type="module">
+  import * as maplibregl from
+    "https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.mjs";
+
+  const jobs = JSON.parse(
+    document.getElementById("job-data").textContent
+  );
+
+  const map = new maplibregl.Map({
+    container: "job-map",
+    style: "https://tiles.openfreemap.org/styles/liberty",
+    center: [-98.5795, 39.8283],
+    zoom: 4
+  });
+
+  map.addControl(
+    new maplibregl.NavigationControl(),
+    "top-left"
+  );
+  map.addControl(
+    new maplibregl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: false,
+      showUserLocation: true
+    }),
+    "top-left"
+  );
+
+  const bounds = new maplibregl.LngLatBounds();
+  const groups = new Map();
+
+  jobs.forEach(job => {
+    const key = `${job.latitude},${job.longitude}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(job);
+  });
+
+  groups.forEach(group => {
+    const first = group[0];
+    const coords = [
+      first.longitude,
+      first.latitude
+    ];
+
+    const markerElement = document.createElement("div");
+    markerElement.className = "rb-job-marker";
+
+    const icon = document.createElement("i");
+    icon.className = "fa-solid fa-briefcase";
+    markerElement.appendChild(icon);
+
+    const popup = document.createElement("div");
+
+    group.forEach(job => {
+      const item = document.createElement("div");
+      item.className = "rb-job-popup";
+
+      const title = document.createElement("strong");
+      title.textContent = job.title;
+
+      const company = document.createElement("p");
+      company.textContent = job.company;
+
+      const location = document.createElement("p");
+      location.textContent = job.location;
+
+      const link = document.createElement("a");
+      link.href = "{% url 'jobs.search' %}#job-" + job.id;
+      link.textContent = "View Job Posting";
+
+      item.append(title, company, location, link);
+      popup.appendChild(item);
+    });
+
+    new maplibregl.Marker({
+      element: markerElement,
+      anchor: "bottom"
+    })
+      .setLngLat(coords)
+      .setPopup(
+        new maplibregl.Popup({
+          offset: 25,
+          maxWidth: "300px"
+        }).setDOMContent(popup)
+      )
+      .addTo(map);
+
+    bounds.extend(coords);
+  });
+
+  if (jobs.length > 0) {
+    map.fitBounds(bounds, {
+      padding: 40,
+      maxZoom: 12
+    });
+  }
+</script>
+{% endblock content %}
