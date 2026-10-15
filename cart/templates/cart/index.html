@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>My Job Cart</h2>
+        <p class="text-muted">Collect jobs here to compare them before you apply.</p>
+        <hr />
+      </div>
+    </div>
+    {% if template_data.jobs_in_cart %}
+    <div class="row m-1 table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle">
+        <thead>
+          <tr>
+            <th>Job</th>
+            <th>Location</th>
+            <th>Workplace</th>
+            <th>Salary</th>
+            <th>Visa</th>
+            <th>Skills</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in template_data.jobs_in_cart %}
+          <tr>
+            <td><b>{{ job.title }}</b><br>{{ job.company }}</td>
+            <td>{{ job.location }}</td>
+            <td>{{ job.get_workplace_display }}</td>
+            <td>
+              {% if job.salary_min and job.salary_max %}
+                ${{ job.salary_min }} - ${{ job.salary_max }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>{% if job.visa_sponsorship %}Yes{% else %}No{% endif %}</td>
+            <td>
+              {% for skill in job.skills.all %}
+                {{ skill.skill }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </td>
+            <td>
+              {% if job.id in template_data.applied_ids %}
+                <span class="badge bg-success p-2">Applied</span>
+              {% else %}
+                <form method="POST" action="{% url 'jobs.apply' job.id %}" class="mb-2">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'cart.index' %}" />
+                  <button type="submit" class="btn btn-rb px-3 py-1 fw-semibold">Apply</button>
+                </form>
+              {% endif %}
+              <a href="{% url 'cart.remove' job.id %}"
+                class="btn btn-rb-secondary px-3 py-1 fw-semibold mt-1">Remove</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="text-end">
+      <a href="{% url 'cart.clear' %}" class="btn btn-danger mb-2">Remove all jobs from cart</a>
+    </div>
+    {% else %}
+      <p>Your cart is empty. <a href="{% url 'jobs.search' %}">Find jobs</a> to add.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}

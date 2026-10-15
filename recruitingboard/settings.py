@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'jobs',
     'messaging',
     'reports',
+    'cart'
 ]
 
 MIDDLEWARE = [
