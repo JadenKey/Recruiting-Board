@@ -46,6 +46,56 @@
   .rb-job-popup + .rb-job-popup {
     border-top: 1px solid #d4b89d;
   }
+
+  /* job list under the map */
+  #job-list {
+    max-height: 480px;
+    overflow-y: auto;
+  }
+  .rb-job-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 8px;
+    border-bottom: 1px solid #d4b89d;
+    color: #543d2f;
+  }
+  .rb-job-list-item:last-child {
+    border-bottom: none;
+  }
+  .rb-job-list-item.is-active {
+    background-color: rgba(156, 112, 50, 0.12);
+    border-radius: 6px;
+  }
+  .rb-job-list-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+  .rb-job-list-meta {
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+  .rb-job-list-distance {
+    font-size: 13px;
+    font-weight: 600;
+    color: #9c7032;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+  .rb-job-list-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .rb-job-list-actions a {
+    color: #9c7032;
+    font-weight: 600;
+    text-decoration: underline;
+  }
 </style>
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -68,14 +118,17 @@
         <label for="distance-filter" class="form-label fw-semibold">
           Distance from My Location
         </label>
-        <select id="distance-filter" class="form-select" disabled>
-          <option value="10">Within 10 miles</option>
-          <option value="25" selected>Within 25 miles</option>
-          <option value="50">Within 50 miles</option>
-          <option value="100">Within 100 miles</option>
-          <option value="250">Within 250 miles</option>
-          <option value="all">Any distance</option>
-        </select>
+        <div class="input-group">
+          <input type="number" id="distance-filter" class="form-control"
+                 min="1" max="5000" step="any" value="25"
+                 inputmode="decimal"
+                 aria-describedby="distance-help"
+                 disabled />
+          <span class="input-group-text">miles</span>
+        </div>
+        <div id="distance-help" class="form-text">
+          Type any distance, then press Enter or pause typing.
+        </div>
       </div>
 
       <div class="col-md-7 d-flex gap-2 flex-wrap">
@@ -98,11 +151,19 @@
     </p>
   </div>
 
-  <div class="card rb-card-background shadow rounded p-3">
+  <div class="card rb-card-background shadow rounded p-3 mb-3">
     <div id="job-map"></div>
     <p class="small mt-3 mb-0">
       Click a marker to view the job details.
     </p>
+  </div>
+
+  <div class="card rb-card-background shadow rounded p-3 mb-4">
+    <h4 class="mb-2">
+      Jobs on the Map
+      <span id="job-list-count" class="badge rounded-pill bg-secondary align-middle"></span>
+    </h4>
+    <div id="job-list"></div>
   </div>
 </div>
 {{ template_data.job_locations|json_script:"job-data" }}
@@ -116,6 +177,8 @@
   const jobs = JSON.parse(
     document.getElementById("job-data").textContent
   );
+
+  const jobPostingUrl = "{% url 'jobs.search' %}";
 
   const map = new maplibregl.Map({
     container: "job-map",
@@ -180,7 +243,7 @@
       location.textContent = job.location;
 
       const link = document.createElement("a");
-      link.href = "{% url 'jobs.search' %}#job-" + job.id;
+      link.href = jobPostingUrl + "#job-" + job.id;
       link.textContent = "View Job Posting";
 
       item.append(title, company, location, link);
@@ -200,11 +263,19 @@
       )
       .addTo(map);
 
-    jobMarkers.push({
+    const markerInfo = {
       marker: marker,
       latitude: first.latitude,
       longitude: first.longitude,
-      count: group.length
+      count: group.length,
+      jobs: group
+    };
+
+    jobMarkers.push(markerInfo);
+
+    // remember which marker each job belongs to (used by the list)
+    group.forEach(job => {
+      job.markerInfo = markerInfo;
     });
 
     bounds.extend(coords);
@@ -221,8 +292,13 @@
   const locationButton = document.getElementById("use-location");
   const showAllButton = document.getElementById("show-all-jobs");
   const filterStatus = document.getElementById("filter-status");
+  const jobList = document.getElementById("job-list");
+  const jobListCount = document.getElementById("job-list-count");
 
   let userLocation = null;
+  let isShowingAll = false;
+  let typingTimer = null;
+  const TYPING_DELAY_MS = 400;
 
   // formula used to calculate distance between two coordinates
   // adapted from https://www.movable-type.co.uk/scripts/latlong.html
@@ -243,22 +319,146 @@
       Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
   }
 
+  function formatMiles(miles) {
+    const rounded = Math.round(miles * 10) / 10;
+    return `${rounded.toLocaleString()} ${rounded === 1 ? "mile" : "miles"}`;
+  }
+
+  // returns the typed radius in miles, or null if the input is not valid
+  function getTypedRadius() {
+    const raw = distanceFilter.value.trim();
+    if (raw === "") {
+      return null;
+    }
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0) {
+      return null;
+    }
+    return value;
+  }
+
+  function focusJobOnMap(job, listItem) {
+    const info = job.markerInfo;
+
+    // close any other open popups first
+    jobMarkers.forEach(other => {
+      if (other !== info) {
+        other.marker.getPopup()?.remove();
+      }
+    });
+
+    document.querySelectorAll(".rb-job-list-item.is-active")
+      .forEach(el => el.classList.remove("is-active"));
+    listItem.classList.add("is-active");
+
+    map.flyTo({
+      center: [info.longitude, info.latitude],
+      zoom: Math.max(map.getZoom(), 11)
+    });
+
+    const popup = info.marker.getPopup();
+    if (popup && !popup.isOpen()) {
+      info.marker.togglePopup();
+    }
+
+    document.getElementById("job-map").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }
+
+  // entries: [{ job, distance }] where distance may be null
+  function renderJobList(entries, emptyMessage) {
+    jobList.replaceChildren();
+    jobListCount.textContent = entries.length;
+
+    if (entries.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "text-muted mb-0";
+      empty.textContent = emptyMessage;
+      jobList.appendChild(empty);
+      return;
+    }
+
+    entries.forEach(({ job, distance }) => {
+      const item = document.createElement("div");
+      item.className = "rb-job-list-item";
+
+      const details = document.createElement("div");
+
+      const title = document.createElement("div");
+      title.className = "rb-job-list-title";
+      title.textContent = job.title;
+
+      const meta = document.createElement("p");
+      meta.className = "rb-job-list-meta";
+      meta.textContent = `${job.company} · ${job.location}`;
+
+      details.append(title, meta);
+
+      if (distance !== null) {
+        const distanceText = document.createElement("p");
+        distanceText.className = "rb-job-list-distance";
+        distanceText.textContent = `${formatMiles(distance)} away`;
+        details.appendChild(distanceText);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "rb-job-list-actions";
+
+      const showButton = document.createElement("button");
+      showButton.type = "button";
+      showButton.className = "btn btn-rb-secondary btn-sm fw-semibold";
+      showButton.textContent = "Show on Map";
+      showButton.addEventListener("click", () => {
+        focusJobOnMap(job, item);
+      });
+
+      const link = document.createElement("a");
+      link.href = jobPostingUrl + "#job-" + job.id;
+      link.textContent = "View Job Posting";
+
+      actions.append(showButton, link);
+      item.append(details, actions);
+      jobList.appendChild(item);
+    });
+  }
+
   function filterJobsByDistance() {
+    // no location yet: show every mapped job, no distances
     if (!userLocation) {
       jobMarkers.forEach(job => {
         job.marker.getElement().style.display = "";
       });
+      renderJobList(
+        jobs.map(job => ({ job: job, distance: null })),
+        "There are no jobs with a mapped location yet."
+      );
       return;
     }
 
-    const selectedDistance = distanceFilter.value;
+    let maxDistance;
 
-    const maxDistance = selectedDistance === "all"
-      ? Infinity
-      : Number(selectedDistance);
+    if (isShowingAll) {
+      maxDistance = Infinity;
+      distanceFilter.classList.remove("is-invalid");
+    } else {
+      maxDistance = getTypedRadius();
+
+      if (maxDistance === null) {
+        // keep the current results and explain what is wrong
+        distanceFilter.classList.add("is-invalid");
+        filterStatus.textContent =
+          "Enter a distance greater than 0 miles, " +
+          "or click Show All Jobs.";
+        return;
+      }
+
+      distanceFilter.classList.remove("is-invalid");
+    }
 
     const visibleBounds = new maplibregl.LngLatBounds();
-    let visibleJobCount = 0;
+    const visibleEntries = [];
 
     if (maxDistance !== Infinity) {
       visibleBounds.extend([
@@ -267,30 +467,35 @@
       ]);
     }
 
-    jobMarkers.forEach(job => {
+    jobMarkers.forEach(markerInfo => {
       const distance = calculateDistance(
         userLocation.latitude,
         userLocation.longitude,
-        job.latitude,
-        job.longitude
+        markerInfo.latitude,
+        markerInfo.longitude
       );
 
       const isVisible = distance <= maxDistance;
 
-      job.marker.getElement().style.display =
+      markerInfo.marker.getElement().style.display =
         isVisible ? "" : "none";
 
       if (isVisible) {
-        visibleJobCount += job.count;
+        markerInfo.jobs.forEach(job => {
+          visibleEntries.push({ job: job, distance: distance });
+        });
 
         visibleBounds.extend([
-          job.longitude,
-          job.latitude
+          markerInfo.longitude,
+          markerInfo.latitude
         ]);
       } else {
-        job.marker.getPopup()?.remove();
+        markerInfo.marker.getPopup()?.remove();
       }
     });
+
+    // nearest jobs first
+    visibleEntries.sort((a, b) => a.distance - b.distance);
 
     if (!visibleBounds.isEmpty()) {
       map.fitBounds(visibleBounds, {
@@ -299,18 +504,24 @@
       });
     }
 
+    const visibleJobCount = visibleEntries.length;
+    let emptyMessage = "There are no jobs with a mapped location yet.";
+
     if (maxDistance === Infinity) {
       filterStatus.textContent =
         `Showing all ${visibleJobCount} mapped jobs.`;
     } else if (visibleJobCount === 0) {
-      filterStatus.textContent =
-        `No jobs found within ${selectedDistance} miles. ` +
-        `Try selecting a larger distance.`;
+      emptyMessage =
+        `No jobs found within ${formatMiles(maxDistance)}. ` +
+        `Try a larger distance.`;
+      filterStatus.textContent = emptyMessage;
     } else {
       filterStatus.textContent =
         `Showing ${visibleJobCount} of ${jobs.length} ` +
-        `mapped jobs within ${selectedDistance} miles.`;
+        `mapped jobs within ${formatMiles(maxDistance)}.`;
     }
+
+    renderJobList(visibleEntries, emptyMessage);
   }
 
   locationButton.addEventListener("click", () => {
@@ -342,15 +553,31 @@
         : "Unable to retrieve your location. Please try again.";
   });
 
-  distanceFilter.addEventListener("change", () => {
-    filterJobsByDistance();
+  // wait until the user pauses typing so the map doesn't jump on every key
+  distanceFilter.addEventListener("input", () => {
+    isShowingAll = false;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(filterJobsByDistance, TYPING_DELAY_MS);
+  });
+
+  // apply right away on Enter
+  distanceFilter.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      clearTimeout(typingTimer);
+      isShowingAll = false;
+      filterJobsByDistance();
+    }
   });
 
   showAllButton.addEventListener("click", () => {
-    distanceFilter.value = "all";
+    clearTimeout(typingTimer);
+    isShowingAll = true;
+    distanceFilter.value = "";
     filterJobsByDistance();
   });
 
-
+  // fill the list as soon as the page loads
+  filterJobsByDistance();
 </script>
 {% endblock content %}
