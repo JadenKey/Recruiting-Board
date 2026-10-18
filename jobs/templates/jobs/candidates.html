@@ -92,6 +92,38 @@
           </div>
         </div>
 
+        {% if template_data.filters.name or template_data.filters.location or template_data.filters.skill or template_data.filters.project %}
+          <div class="card rb-card-background shadow p-3 mb-4 rounded">
+            <div class="card-body">
+              <form method="POST" action="{% url 'jobs.save_search' %}">
+                {% csrf_token %}
+                <input type="hidden" name="name" value="{{ template_data.filters.name|default:'' }}" />
+                <input type="hidden" name="location" value="{{ template_data.filters.location|default:'' }}" />
+                <input type="hidden" name="skill" value="{{ template_data.filters.skill|default:'' }}" />
+                <input type="hidden" name="project" value="{{ template_data.filters.project|default:'' }}" />
+                <p>
+                  <label for="id_title">Save this search:</label>
+                  <input
+                    type="text"
+                    name="title"
+                    id="id_title"
+                    class="form-control"
+                    maxlength="200"
+                    placeholder="e.g. Python developers in Atlanta"
+                  />
+                </p>
+                <button
+                  type="submit"
+                  class="btn btn-rb px-4 py-2 fw-semibold"
+                >
+                  Save Search
+                </button>
+              </form>
+              <p class="small text-muted mt-2 mb-0">You will get a notification on Saved Searches when new candidates match.</p>
+            </div>
+          </div>
+        {% endif %}
+
         {% for candidate in template_data.candidates %}
           <div class="card rb-card-background shadow p-3 mb-4 rounded">
             <div class="card-body">

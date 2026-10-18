@@ -48,3 +48,29 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.seeker.username} applied to {self.job}"
+
+class SavedSearch(models.Model):
+    recruiter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_searches")
+    title = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, blank=True)
+    location = models.CharField(max_length=200, blank=True)
+    skill = models.ForeignKey(Skill, on_delete=models.SET_NULL, null=True, blank=True)
+    project = models.CharField(max_length=200, blank=True)
+    # candidates the recruiter already saw
+    seen = models.ManyToManyField("accounts.JobSeekerProfile", blank=True, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.recruiter.username})"
+
+    # same keys as the candidates search form
+    def filters(self):
+        return {
+            "name": self.name,
+            "location": self.location,
+            "skill": str(self.skill.id) if self.skill else "",
+            "project": self.project,
+        }

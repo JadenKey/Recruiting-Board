@@ -14,4 +14,9 @@ urlpatterns = [
     path('applications/<int:id>/candidate/', views.candidate_details, name='jobs.candidate_details'),
     path("<int:id>/recommendations/", views.candidate_recommendations, name="jobs.candidate_recommendations"),
     path('export/<str:kind>', views.export_csv, name='jobs.export_csv'),
+    path('saved-searches', views.saved_searches, name='jobs.saved_searches'),
+    path('saved-searches/save', views.save_search, name='jobs.save_search'),
+    path('saved-searches/<int:id>/seen', views.saved_search_seen, name='jobs.saved_search_seen'),
+    path('saved-searches/<int:id>/delete', views.delete_search, name='jobs.delete_search'),
+    path('applicant-map', views.applicant_map, name='jobs.applicant_map'),
 ]

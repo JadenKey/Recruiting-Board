@@ -39,6 +39,8 @@
                 class="btn btn-rb-secondary px-4 py-2 fw-semibold">Pipeline</a>
               <a href="{% url 'jobs.candidate_recommendations' job.id %}"
                 class="btn btn-rb-secondary px-4 py-2 fw-semibold">Candidates</a>
+              <a href="{% url 'jobs.applicant_map' %}?job={{ job.id }}"
+                class="btn btn-rb-secondary px-4 py-2 fw-semibold">Applicant Map</a>
             </div>
           </div>
         {% empty %}

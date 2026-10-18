@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2>Saved Searches</h2>
+          <a href="{% url 'jobs.candidates' %}"
+            class="btn btn-rb px-4 py-2 fw-semibold">New Search</a>
+        </div>
+        <hr />
+
+        {% for item in template_data.searches %}
+          <div class="card rb-card-background shadow p-3 mb-4 rounded">
+            <div class="card-body">
+
+              <h4>
+                {{ item.search.title }}
+                {% if item.new_matches %}
+                  <span class="badge bg-danger p-2 align-middle">{{ item.new_matches|length }} new</span>
+                {% endif %}
+              </h4>
+
+              <p class="text-muted">
+                {% if item.search.name %}Name: {{ item.search.name }} | {% endif %}
+                {% if item.search.location %}Location: {{ item.search.location }} | {% endif %}
+                {% if item.search.skill %}Skill: {{ item.search.skill }} | {% endif %}
+                {% if item.search.project %}Project: {{ item.search.project }} | {% endif %}
+                {{ item.total }} total match{{ item.total|pluralize:"es" }}
+              </p>
+
+              {% if item.new_matches %}
+                <p>New candidates since you last checked:</p>
+                <ul>
+                  {% for candidate in item.new_matches %}
+                    <li>
+                      <a href="{% url 'accounts.profile_show' candidate.id %}">{{ candidate.user.username }}</a>
+                      {% if candidate.show_location and candidate.location %}
+                        - {{ candidate.location }}
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p>No new candidates yet.</p>
+              {% endif %}
+
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'jobs.candidates' %}?{{ item.query }}"
+                  class="btn btn-rb px-4 py-2 fw-semibold">View All Matches</a>
+
+                {% if item.new_matches %}
+                  <form method="POST" action="{% url 'jobs.saved_search_seen' item.search.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-rb-secondary px-4 py-2 fw-semibold">
+                      Mark as Seen
+                    </button>
+                  </form>
+                {% endif %}
+
+                <form method="POST" action="{% url 'jobs.delete_search' item.search.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-rb-secondary px-4 py-2 fw-semibold">
+                    Delete
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        {% empty %}
+          <p>You have no saved searches. Search for candidates and click "Save Search" to get notified about new matches.</p>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

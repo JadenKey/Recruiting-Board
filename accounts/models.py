@@ -28,6 +28,8 @@ class JobSeekerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="seeker_profile")
     headline = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=200, blank=True, default="")
+    latitude = models.FloatField(null=True, blank=True, editable=False)
+    longitude = models.FloatField(null=True, blank=True, editable=False)
     skills = models.ManyToManyField(Skill, blank=True, related_name="seekers")
     show_headline = models.BooleanField(default=True, verbose_name="Show headline to recruiters")
     show_location = models.BooleanField(default=True, verbose_name="Show location to recruiters")

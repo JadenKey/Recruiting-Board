@@ -4,6 +4,7 @@ from .forms import (CustomUserCreationForm, JobSeekerProfileForm, EducationFormS
     WorkExperienceFormSet, ProjectFormSet, LinkFormSet)
 from .models import JobSeekerProfile, RecruiterProfile
 from reports.models import Report
+from jobs.geocoding import set_profile_coordinates
 
 def is_job_seeker(user):
     return user.is_authenticated and user.is_job_seeker
@@ -76,6 +77,8 @@ def profile_edit(request):
         form_valid = form.is_valid()
         formsets_valid = all([formset.is_valid() for title, formset, toggle in formsets])
         if form_valid and formsets_valid:
+            if 'location' in form.changed_data or profile.latitude is None:
+                set_profile_coordinates(profile)
             form.save()
             for title, formset, toggle in formsets:
                 formset.save()

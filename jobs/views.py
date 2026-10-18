@@ -10,6 +10,9 @@ from .forms import JobForm, ApplicationForm
 import csv
 from django.http import HttpResponse
 from .geocoding import set_coordinates
+from .models import SavedSearch
+from .geocoding import set_profile_coordinates
+from urllib.parse import urlencode
 
 def is_recruiter(user):
     return user.is_authenticated and user.is_recruiter
@@ -352,3 +355,150 @@ def export_csv(request, kind):
         return redirect('home.index')
 
     return response
+
+# same filters as the candidates page, used for saved searches
+def filter_candidates(filters):
+    candidates = JobSeekerProfile.objects.filter(
+        user__role=User.Role.JOB_SEEKER,
+    ).select_related('user')
+
+    name = filters.get('name', '').strip()
+    if name:
+        candidates = candidates.filter(user__username__icontains=name)
+
+    location = filters.get('location', '').strip()
+    if location:
+        candidates = candidates.filter(show_location=True, location__icontains=location)
+
+    skill = filters.get('skill', '')
+    if skill:
+        candidates = candidates.filter(show_skills=True, skills__id=skill)
+
+    project = filters.get('project', '').strip()
+    if project:
+        candidates = candidates.filter(show_projects=True).filter(
+            Q(projects__title__icontains=project) |
+            Q(projects__description__icontains=project)
+        )
+
+    return candidates.distinct().order_by('user__username')
+
+def new_matches(saved_search):
+    return filter_candidates(saved_search.filters()).exclude(id__in=saved_search.seen.all())
+
+def save_search(request):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    if request.method != 'POST':
+        return redirect('jobs.candidates')
+
+    saved_search = SavedSearch(recruiter=request.user)
+    saved_search.title = request.POST.get('title', '').strip()
+    saved_search.name = request.POST.get('name', '').strip()
+    saved_search.location = request.POST.get('location', '').strip()
+    saved_search.project = request.POST.get('project', '').strip()
+    skill = request.POST.get('skill', '')
+    if skill.isdigit():
+        saved_search.skill = Skill.objects.filter(id=skill).first()
+
+    if not (saved_search.name or saved_search.location or saved_search.skill or saved_search.project):
+        messages.error(request, 'Add at least one filter before saving a search.')
+        return redirect('jobs.candidates')
+    if not saved_search.title:
+        saved_search.title = 'My Search'
+    saved_search.save()
+
+    # people who already match are not new
+    saved_search.seen.set(filter_candidates(saved_search.filters()))
+    messages.success(request, f'Saved "{saved_search.title}". You will be notified when new candidates match it.')
+    return redirect('jobs.saved_searches')
+
+def saved_searches(request):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+
+    searches = []
+    for saved_search in SavedSearch.objects.filter(recruiter=request.user).select_related('skill'):
+        searches.append({
+            'search': saved_search,
+            'new_matches': new_matches(saved_search),
+            'total': filter_candidates(saved_search.filters()).count(),
+            'query': urlencode(saved_search.filters()),
+        })
+
+    template_data = {}
+    template_data['title'] = 'Saved Searches'
+    template_data['searches'] = searches
+    return render(request, 'jobs/saved_searches.html', {'template_data': template_data})
+
+def saved_search_seen(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    saved_search = get_object_or_404(SavedSearch, id=id, recruiter=request.user)
+    if request.method == 'POST':
+        saved_search.seen.add(*new_matches(saved_search))
+        messages.success(request, f'Marked new matches for "{saved_search.title}" as seen.')
+    return redirect('jobs.saved_searches')
+
+def delete_search(request, id):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+    saved_search = get_object_or_404(SavedSearch, id=id, recruiter=request.user)
+    if request.method == 'POST':
+        saved_search.delete()
+        messages.success(request, f'Deleted "{saved_search.title}".')
+    return redirect('jobs.saved_searches')
+
+def applicant_map(request):
+    if not is_recruiter(request.user):
+        return redirect('home.index')
+
+    jobs = Job.objects.filter(recruiter=request.user)
+    applications = Application.objects.filter(job__recruiter=request.user).select_related('job', 'seeker')
+
+    selected_job = request.GET.get('job', '')
+    if selected_job.isdigit():
+        applications = applications.filter(job__id=selected_job)
+
+    applicant_locations = []
+    location_counts = {}
+    unmapped = 0
+
+    for application in applications:
+        profile = JobSeekerProfile.objects.filter(user=application.seeker).first()
+        # respect the job seeker's privacy setting
+        if profile is None or not profile.show_location or not profile.location:
+            unmapped += 1
+            continue
+
+        # profiles saved before we stored coordinates need to be looked up once
+        if profile.latitude is None:
+            if set_profile_coordinates(profile):
+                profile.save()
+        if profile.latitude is None:
+            unmapped += 1
+            continue
+
+        applicant_locations.append({
+            "username": application.seeker.username,
+            "job": application.job.title,
+            "location": profile.location,
+            "latitude": profile.latitude,
+            "longitude": profile.longitude,
+            "url": reverse('jobs.candidate_details', args=[application.id]),
+        })
+
+        # group by coordinates so for example "Atlanta" and "atlanta, ga" count together
+        key = (profile.latitude, profile.longitude)
+        if key not in location_counts:
+            location_counts[key] = {'location': profile.location, 'count': 0}
+        location_counts[key]['count'] += 1
+
+    template_data = {}
+    template_data['title'] = 'Applicant Map'
+    template_data['jobs'] = jobs
+    template_data['selected_job'] = selected_job
+    template_data['applicant_locations'] = applicant_locations
+    template_data['location_counts'] = sorted(location_counts.values(), key=lambda row: -row['count'])
+    template_data['unmapped'] = unmapped
+    return render(request, 'jobs/applicant_map.html', {'template_data': template_data})

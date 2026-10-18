@@ -5,6 +5,7 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError
 
 from .models import Job
+from accounts.models import JobSeekerProfile
 
 
 def set_coordinates(job):
@@ -61,3 +62,25 @@ def set_coordinates(job):
     job.latitude = None
     job.longitude = None
     return False
+
+
+# same idea as set_coordinates but for a job seeker's location
+def set_profile_coordinates(profile):
+    location = (profile.location or "").strip()
+
+    existing = JobSeekerProfile.objects.filter(
+        location__iexact=location,
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).exclude(id=profile.id).values_list("latitude", "longitude").first()
+
+    if location and existing:
+        profile.latitude, profile.longitude = existing
+        return True
+
+    # use the job lookup so we don't write it twice
+    job = Job(location=location)
+    found = set_coordinates(job)
+    profile.latitude = job.latitude
+    profile.longitude = job.longitude
+    return found

@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block content %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.css"
+/>
+<style>
+  #applicant-map {
+    height: 550px;
+    width: 100%;
+    border-radius: 8px;
+  }
+  .rb-applicant-popup {
+    color: #543d2f;
+    font-family: 'Poppins', sans-serif;
+    padding: 8px;
+  }
+  .rb-applicant-popup strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 5px;
+  }
+  .rb-applicant-popup p {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .rb-applicant-popup a {
+    color: #9c7032;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .rb-applicant-popup + .rb-applicant-popup {
+    border-top: 1px solid #d4b89d;
+  }
+  .rb-applicant-popup-list {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2>Applicant Map</h2>
+  <hr />
+
+  <div class="card rb-card-background shadow rounded p-3 mb-3">
+    <form method="GET" class="d-flex flex-wrap gap-2 align-items-end">
+      <div>
+        <label for="id_job">Job:</label>
+        <select name="job" id="id_job" class="form-control">
+          <option value="">All my jobs</option>
+          {% for job in template_data.jobs %}
+            <option
+              value="{{ job.id }}"
+              {% if template_data.selected_job == job.id|stringformat:"s" %}selected{% endif %}
+            >
+              {{ job.title }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-rb px-4 py-2 fw-semibold">
+        Show Applicants
+      </button>
+    </form>
+    <p class="small mt-3 mb-0">
+      Applicants on the map: {{ template_data.applicant_locations|length }}
+      {% if template_data.unmapped %}
+        <br />
+        Not shown (hidden, remote, or no location): {{ template_data.unmapped }}
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="card rb-card-background shadow rounded p-3 mb-3">
+    <div id="applicant-map"></div>
+    <p class="small mt-3 mb-0">
+      Circles show how many applicants are in an area. Click a circle to zoom in, or click a single applicant to see their details.
+    </p>
+  </div>
+
+  <div class="card rb-card-background shadow rounded p-3 mb-4">
+    <h4 class="mb-2">Applicants by Location</h4>
+    {% if template_data.location_counts %}
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th>Applicants</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in template_data.location_counts %}
+            <tr>
+              <td>{{ row.location }}</td>
+              <td>{{ row.count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="mb-0">No applicants with a location yet.</p>
+    {% endif %}
+  </div>
+</div>
+{{ template_data.applicant_locations|json_script:"applicant-data" }}
+
+<!-- clustering based on https://maplibre.org/maplibre-gl-js/docs/examples/cluster/ -->
+<script type="module">
+  import * as maplibregl from
+    "https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.mjs";
+
+  const applicants = JSON.parse(
+    document.getElementById("applicant-data").textContent
+  );
+
+  const map = new maplibregl.Map({
+    container: "applicant-map",
+    style: "https://tiles.openfreemap.org/styles/liberty",
+    center: [-98.5795, 39.8283],
+    zoom: 3
+  });
+
+  map.addControl(
+    new maplibregl.NavigationControl(),
+    "top-left"
+  );
+
+  // turn each applicant into a geojson point
+  const features = applicants.map((applicant, index) => ({
+    type: "Feature",
+    properties: { index: index },
+    geometry: {
+      type: "Point",
+      coordinates: [applicant.longitude, applicant.latitude]
+    }
+  }));
+
+  // builds the popup for one or more applicants
+  function makePopup(list) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "rb-applicant-popup-list";
+
+    list.forEach(applicant => {
+      const item = document.createElement("div");
+      item.className = "rb-applicant-popup";
+
+      const name = document.createElement("strong");
+      name.textContent = applicant.username;
+      item.appendChild(name);
+
+      const job = document.createElement("p");
+      job.textContent = "Applied to: " + applicant.job;
+      item.appendChild(job);
+
+      const location = document.createElement("p");
+      location.textContent = applicant.location;
+      item.appendChild(location);
+
+      const link = document.createElement("a");
+      link.href = applicant.url;
+      link.textContent = "View application";
+      item.appendChild(link);
+
+      wrapper.appendChild(item);
+    });
+
+    return wrapper;
+  }
+
+  map.on("load", () => {
+    map.addSource("applicants", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: features
+      },
+      cluster: true,
+      clusterMaxZoom: 12,
+      clusterRadius: 50
+    });
+
+    // bigger circles for bigger groups
+    map.addLayer({
+      id: "clusters",
+      type: "circle",
+      source: "applicants",
+      filter: ["has", "point_count"],
+      paint: {
+        "circle-color": "#9c7032",
+        "circle-stroke-color": "#543d2f",
+        "circle-stroke-width": 2,
+        "circle-radius": [
+          "step",
+          ["get", "point_count"],
+          18,
+          5, 24,
+          10, 30
+        ]
+      }
+    });
+
+    map.addLayer({
+      id: "cluster-count",
+      type: "symbol",
+      source: "applicants",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": ["get", "point_count_abbreviated"],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": 14
+      },
+      paint: {
+        "text-color": "#ffffff"
+      }
+    });
+
+    // single applicants
+    map.addLayer({
+      id: "applicant-point",
+      type: "circle",
+      source: "applicants",
+      filter: ["!", ["has", "point_count"]],
+      paint: {
+        "circle-color": "#543d2f",
+        "circle-radius": 8,
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff"
+      }
+    });
+
+    // zoom into a cluster when it is clicked
+    map.on("click", "clusters", async (event) => {
+      const cluster = event.features[0];
+      const source = map.getSource("applicants");
+      const clusterId = cluster.properties.cluster_id;
+      const zoom = await source.getClusterExpansionZoom(clusterId);
+
+      // people in the same city never split up, so just list them
+      if (zoom > 12) {
+        const leaves = await source.getClusterLeaves(clusterId, 100, 0);
+        const list = leaves.map(leaf => applicants[leaf.properties.index]);
+        new maplibregl.Popup()
+          .setLngLat(cluster.geometry.coordinates)
+          .setDOMContent(makePopup(list))
+          .addTo(map);
+        return;
+      }
+
+      map.easeTo({
+        center: cluster.geometry.coordinates,
+        zoom: zoom
+      });
+    });
+
+    map.on("click", "applicant-point", (event) => {
+      const point = event.features[0];
+      const applicant = applicants[point.properties.index];
+      new maplibregl.Popup()
+        .setLngLat(point.geometry.coordinates)
+        .setDOMContent(makePopup([applicant]))
+        .addTo(map);
+    });
+
+    ["clusters", "applicant-point"].forEach(layer => {
+      map.on("mouseenter", layer, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", layer, () => {
+        map.getCanvas().style.cursor = "";
+      });
+    });
+
+    // fit the map around all the applicants
+    if (applicants.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      applicants.forEach(applicant => {
+        bounds.extend([applicant.longitude, applicant.latitude]);
+      });
+      map.fitBounds(bounds, { padding: 60, maxZoom: 9 });
+    }
+  });
+</script>
+{% endblock content %}
